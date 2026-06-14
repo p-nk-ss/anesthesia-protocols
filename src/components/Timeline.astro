@@ -1,0 +1,58 @@
+---
+/**
+ * Вертикальна таймлінія кроків алгоритму.
+ * Рендериться на сервері як семантичний <ol> — читається без JS, друкується,
+ * працює офлайн. Анімація появи додається ненав'язливо через IntersectionObserver
+ * (див. timeline-reveal.ts) і вимикається при prefers-reduced-motion.
+ */
+export interface Step {
+  title: string;
+  body?: string;
+  items?: string[];
+  severity?: 'info' | 'warning' | 'critical' | 'success';
+  label?: string;
+}
+interface Props {
+  steps: Step[];
+}
+const { steps } = Astro.props;
+
+const SEV_TEXT: Record<string, string> = {
+  info: 'Крок',
+  success: 'Підтвердження',
+  warning: 'Увага',
+  critical: 'Критично',
+};
+---
+
+<ol class="timeline" data-timeline>
+  {
+    steps.map((step, i) => (
+      <li class="tl-step" data-tl-step data-severity={step.severity ?? 'info'}>
+        <div class="tl-node" aria-hidden="true">
+          <span class="tl-num">{i + 1}</span>
+        </div>
+        <div class="tl-card">
+          <div class="tl-meta">
+            {step.label && <span class="tl-label">{step.label}</span>}
+            <span class="tl-sev">{SEV_TEXT[step.severity ?? 'info']}</span>
+          </div>
+          <h3 class="tl-title">{step.title}</h3>
+          {step.body && <p class="tl-body">{step.body}</p>}
+          {step.items && step.items.length > 0 && (
+            <ul class="tl-items">
+              {step.items.map((it) => (
+                <li>{it}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<script>
+  import { initTimelineReveal } from './timeline-reveal';
+  initTimelineReveal();
+</script>

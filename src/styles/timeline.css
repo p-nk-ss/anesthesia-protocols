@@ -1,0 +1,151 @@
+/* Вертикальна таймлінія кроків алгоритму. */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.tl-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-5);
+}
+.tl-step:last-child {
+  padding-bottom: 0;
+}
+
+/* Рейка з'єднує вузли. */
+.tl-step::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 44px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--border-strong);
+}
+.tl-step:last-child::before {
+  display: none;
+}
+
+.tl-node {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--sev-soft, var(--surface-2));
+  border: 2px solid var(--sev, var(--border-strong));
+  color: var(--sev, var(--ink-2));
+}
+.tl-num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.tl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sev, var(--primary));
+  border-radius: var(--radius-sm);
+  padding: var(--sp-4) var(--sp-5);
+  box-shadow: var(--shadow-1);
+}
+
+.tl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.tl-label {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--step--1);
+  letter-spacing: 0.04em;
+  color: var(--sev, var(--primary));
+}
+.tl-sev {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.15em 0.55em;
+  border-radius: 999px;
+  color: var(--sev, var(--ink-2));
+  background: var(--sev-soft, var(--surface-2));
+}
+.tl-title {
+  font-size: var(--step-1);
+  margin: 0 0 var(--sp-2);
+  line-height: 1.2;
+}
+.tl-body {
+  margin: 0;
+  color: var(--ink-2);
+}
+.tl-items {
+  margin: var(--sp-2) 0 0;
+  padding-left: 1.1rem;
+  color: var(--ink-2);
+}
+.tl-items li {
+  margin-bottom: var(--sp-1);
+}
+
+/* Severity → колірні токени вузла/картки. */
+.tl-step[data-severity='info'] {
+  --sev: var(--sev-info);
+  --sev-soft: var(--sev-info-soft);
+}
+.tl-step[data-severity='success'] {
+  --sev: var(--sev-success);
+  --sev-soft: var(--sev-success-soft);
+}
+.tl-step[data-severity='warning'] {
+  --sev: var(--sev-warning);
+  --sev-soft: var(--sev-warning-soft);
+}
+.tl-step[data-severity='critical'] {
+  --sev: var(--sev-critical);
+  --sev-soft: var(--sev-critical-soft);
+}
+
+/* —— Поява при прокрутці —— */
+/* Прихований стан застосовується ЛИШЕ коли JS додав .reveal-on (див. timeline-reveal.ts). */
+@media (prefers-reduced-motion: no-preference) {
+  .tl-step.reveal-on {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  }
+  .tl-step.reveal-on.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .tl-step {
+    grid-template-columns: 36px 1fr;
+    gap: var(--sp-3);
+  }
+  .tl-node {
+    width: 36px;
+    height: 36px;
+  }
+  .tl-step::before {
+    left: 17px;
+    top: 36px;
+  }
+  .tl-card {
+    padding: var(--sp-3) var(--sp-4);
+  }
+}

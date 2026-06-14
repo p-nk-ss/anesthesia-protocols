@@ -1,0 +1,24 @@
+# build output
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# intermediate extraction artifacts
+doc/_extracted/
+doc/_ascii/
+
+# claude / skills (dev environment, not needed for deploy)
+.claude/
+skills-lock.json
+
+# env / editor / os
+.env
+.env.*
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

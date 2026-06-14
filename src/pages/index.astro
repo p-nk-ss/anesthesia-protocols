@@ -1,0 +1,143 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProtocolCard from '../components/ProtocolCard.astro';
+import SearchFilter from '../components/SearchFilter.astro';
+import { CATEGORY_LIST } from '../lib/categories';
+import { plural } from '../lib/plural';
+
+const all = (await getCollection('protocols')).filter((p) => !p.data.draft);
+
+// Сортуємо за order, потім за назвою.
+all.sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, 'uk'));
+
+// Групуємо за категорією у фіксованому порядку CATEGORY_LIST.
+const byCategory = CATEGORY_LIST.map((cat) => ({
+  ...cat,
+  items: all.filter((p) => p.data.category === cat.key),
+})).filter((g) => g.items.length > 0);
+
+const total = all.length;
+const totalWord = plural(total, 'протокол', 'протоколи', 'протоколів');
+const catWord = plural(byCategory.length, 'категорія', 'категорії', 'категорій');
+---
+
+<BaseLayout>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Периопераційний довідник</p>
+      <h1 class="hero__title">Протоколи та алгоритми<br />під рукою</h1>
+      <p class="hero__lead">
+        Швидкий доступ до ключових настанов з анестезіології — без пошуку файлів.
+        Працює офлайн, зручно з телефона в операційній.
+      </p>
+      <p class="hero__meta">
+        <span>{total}</span> {totalWord} · {byCategory.length} {catWord}
+      </p>
+    </div>
+  </section>
+
+  <section class="catalog container">
+    <SearchFilter />
+
+    {
+      byCategory.map((group) => (
+        <section class="cat" data-category-section data-category={group.key}>
+          <header class="cat__head">
+            <span class="cat__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d={group.icon} />
+              </svg>
+            </span>
+            <div>
+              <h2 class="cat__title">{group.label}</h2>
+              <p class="cat__blurb">{group.blurb}</p>
+            </div>
+          </header>
+          <div class="grid">
+            {group.items.map((p) => (
+              <ProtocolCard
+                href={`/protocols/${p.id}`}
+                title={p.data.title}
+                description={p.data.description}
+                type={p.data.type}
+                category={p.data.category}
+                sourceName={p.data.source?.name}
+              />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </section>
+
+  <style>
+    .hero {
+      padding-block: var(--sp-7) var(--sp-6);
+      position: relative;
+    }
+    .hero__title {
+      font-size: var(--step-4);
+      margin: var(--sp-3) 0 var(--sp-4);
+    }
+    .hero__lead {
+      max-width: 38rem;
+      font-size: var(--step-1);
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .hero__meta {
+      font-family: var(--font-mono);
+      font-size: var(--step--1);
+      color: var(--ink-3);
+      margin: 0;
+    }
+    .hero__meta span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .catalog {
+      padding-bottom: var(--sp-6);
+    }
+    .cat {
+      margin-top: var(--sp-7);
+    }
+    .cat:first-of-type {
+      margin-top: 0;
+    }
+    .cat__head {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-4);
+      padding-bottom: var(--sp-3);
+      border-bottom: 1px solid var(--border);
+    }
+    .cat__icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      flex: none;
+      border-radius: 12px;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+    }
+    .cat__title {
+      font-size: var(--step-2);
+      margin: 0;
+    }
+    .cat__blurb {
+      margin: 2px 0 0;
+      color: var(--ink-3);
+      font-size: var(--step--1);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+      gap: var(--sp-4);
+    }
+  </style>
+</BaseLayout>

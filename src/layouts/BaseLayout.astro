@@ -1,0 +1,164 @@
+---
+import '../styles/global.css';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import Capnogram from '../components/Capnogram.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title,
+  description = 'Допоміжні протоколи та алгоритми з анестезіології — швидкий доступ з телефона, працює офлайн.',
+} = Astro.props;
+
+const siteName = 'Протоколи анестезіолога';
+const fullTitle = title ? `${title} — ${siteName}` : siteName;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#f4f7f7" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="uk_UA" />
+
+    {/* No-flash: виставляємо тему до першого рендера. */}
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var theme =
+            saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', theme === 'dark' ? '#0c1417' : '#f4f7f7');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Перейти до вмісту</a>
+
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="brand" href="/" aria-label={`${siteName} — на головну`}>
+          <span class="brand__mark"><Capnogram /></span>
+          <span class="brand__text">
+            <span class="brand__name">Протоколи</span>
+            <span class="brand__sub">анестезіолога</span>
+          </span>
+        </a>
+        <ThemeToggle />
+      </div>
+      <div class="site-header__pulse" aria-hidden="true"><Capnogram animate /></div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    {/* Реєстрація service worker (офлайн/PWA). Працює лише у production-збірці. */}
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
+
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <p>
+          {siteName} · {year}. Особистий довідник. Не замінює клінічного судження
+          та чинних настанов.
+        </p>
+      </div>
+    </footer>
+
+    <style>
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: color-mix(in srgb, var(--bg) 86%, transparent);
+        backdrop-filter: saturate(1.4) blur(10px);
+        border-bottom: 1px solid var(--border);
+      }
+      .site-header__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--sp-4);
+        padding-block: var(--sp-3);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--sp-3);
+        text-decoration: none;
+        color: var(--ink);
+      }
+      .brand__mark {
+        width: 46px;
+        height: 26px;
+        flex: none;
+        opacity: 0.9;
+      }
+      .brand__text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+      }
+      .brand__name {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.2rem;
+        letter-spacing: -0.01em;
+      }
+      .brand__sub {
+        font-family: var(--font-mono);
+        font-size: 0.66rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-top: 3px;
+      }
+      .site-header__pulse {
+        height: 4px;
+        opacity: 0.5;
+      }
+      .site-header__pulse :global(svg) {
+        height: 16px;
+        margin-top: -6px;
+      }
+
+      .site-footer {
+        margin-top: var(--sp-8);
+        border-top: 1px solid var(--border);
+        background: var(--bg-tint);
+      }
+      .site-footer__inner {
+        padding-block: var(--sp-5);
+      }
+      .site-footer p {
+        margin: 0;
+        font-size: var(--step--1);
+        color: var(--ink-3);
+        max-width: 42rem;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+import AlgorithmLayout from '../../layouts/AlgorithmLayout.astro';
+import ReferenceLayout from '../../layouts/ReferenceLayout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('protocols', ({ data }) => !data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+---
+
+{
+  d.type === 'algorithm' ? (
+    <AlgorithmLayout
+      title={d.title}
+      description={d.description}
+      category={d.category}
+      updated={d.updated}
+      source={d.source}
+      steps={d.steps ?? []}
+    >
+      <Content />
+    </AlgorithmLayout>
+  ) : (
+    <ReferenceLayout
+      title={d.title}
+      description={d.description}
+      category={d.category}
+      updated={d.updated}
+      source={d.source}
+    >
+      <Content />
+    </ReferenceLayout>
+  )
+}

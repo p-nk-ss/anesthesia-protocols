@@ -1,0 +1,104 @@
+---
+import { CATEGORY_MAP, TYPE_LABEL } from '../lib/categories';
+import type { CategoryKey } from '../lib/categories';
+
+interface Props {
+  title: string;
+  description: string;
+  category: CategoryKey;
+  type: 'algorithm' | 'reference';
+  updated?: Date;
+  source?: { name: string; org?: string; url?: string; license?: string };
+}
+const { title, description, category, type, updated, source } = Astro.props;
+const cat = CATEGORY_MAP[category];
+const updatedStr = updated
+  ? new Intl.DateTimeFormat('uk-UA', { month: 'long', year: 'numeric' }).format(updated)
+  : null;
+---
+
+<header class="phero">
+  <a class="phero__back" href="/">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+    Усі протоколи
+  </a>
+
+  <div class="phero__tags">
+    <span class="badge" data-type={type}>{TYPE_LABEL[type]}</span>
+    <span class="badge">{cat.label}</span>
+  </div>
+
+  <h1 class="phero__title">{title}</h1>
+  <p class="phero__desc">{description}</p>
+
+  {
+    (source || updatedStr) && (
+      <div class="phero__source">
+        {source && (
+          <span>
+            Джерело:{' '}
+            {source.url ? (
+              <a href={source.url} target="_blank" rel="noopener noreferrer">
+                {source.name}
+              </a>
+            ) : (
+              source.name
+            )}
+            {source.org && ` · ${source.org}`}
+            {source.license && ` · ${source.license}`}
+          </span>
+        )}
+        {updatedStr && <span>Оновлено: {updatedStr}</span>}
+      </div>
+    )
+  }
+</header>
+
+<style>
+  .phero {
+    padding-block: var(--sp-6) var(--sp-5);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--sp-6);
+  }
+  .phero__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    text-decoration: none;
+    margin-bottom: var(--sp-4);
+  }
+  .phero__back:hover {
+    color: var(--primary);
+  }
+  .phero__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+  }
+  .phero__title {
+    font-size: var(--step-3);
+    margin: 0 0 var(--sp-3);
+  }
+  .phero__desc {
+    max-width: var(--maxw-read);
+    font-size: var(--step-1);
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .phero__source {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    margin-top: var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--ink-3);
+  }
+  .phero__source a {
+    color: var(--ink-2);
+  }
+</style>
