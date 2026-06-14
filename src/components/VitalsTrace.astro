@@ -1,103 +1,235 @@
 ---
 /**
- * Сигнатура сайту — живий слід вітального монітора (EtCO₂).
- * Тьмяна базова крива + яскравий «сканер»-сегмент, що біжить ліворуч→праворуч
- * із сяйвом (як оновлення променя монітора). prefers-reduced-motion → статика.
+ * Сигнатура сайту — живий вітальний монітор (як у наркозного апарата):
+ * канал ЕКГ (відведення II) + капнографія EtCO₂, із сіткою-графіком, підписами
+ * каналів і показаннями. Кожен канал має власну «розгортку» (яскравий сегмент,
+ * що біжить уздовж кривої зі сяйвом). prefers-reduced-motion → статичні криві.
  */
 interface Props {
-  variant?: 'hero' | 'line';
+  variant?: 'monitor' | 'line';
   class?: string;
 }
-const { variant = 'hero', class: className } = Astro.props;
+const { variant = 'monitor', class: className } = Astro.props;
 
-// Генеруємо повторювану криву EtCO₂ у viewBox 0..W × 0..100.
-const baseY = 78;
-const topY = 20;
-const cycle = 235;
-const cycles = 6;
-const W = cycle * cycles;
-let d = `M0 ${baseY}`;
-for (let i = 0; i < cycles; i++) {
-  const x = i * cycle;
-  d += ` H${x + 26}`; // базова лінія (видих майже на нулі)
-  d += ` C${x + 40} ${baseY} ${x + 44} ${topY} ${x + 58} ${topY}`; // різкий підйом (вдих CO₂)
-  d += ` L${x + 150} ${topY - 4}`; // плато з легким нахилом
-  d += ` C${x + 162} ${topY - 4} ${x + 165} ${baseY} ${x + 178} ${baseY}`; // різке падіння
-  d += ` H${x + cycle}`;
+// ——— Генератори кривих (viewBox: W × H, y росте донизу) ———
+const W = 1200;
+const H = 100;
+
+function ecgPath(beats: number): string {
+  const c = W / beats;
+  const B = H * 0.62; // ізолінія
+  const P = H * 0.1;
+  const R = H * 0.5;
+  const Q = H * 0.06;
+  const S = H * 0.18;
+  const T = H * 0.16;
+  let d = `M0 ${B}`;
+  for (let i = 0; i < beats; i++) {
+    const x = i * c;
+    d += ` L${x + 0.08 * c} ${B}`;
+    // P-хвиля (округла)
+    d += ` Q${x + 0.15 * c} ${B - P} ${x + 0.22 * c} ${B}`;
+    d += ` L${x + 0.3 * c} ${B}`; // PR-сегмент
+    // QRS-комплекс (гострий)
+    d += ` L${x + 0.33 * c} ${B + Q}`;
+    d += ` L${x + 0.37 * c} ${B - R}`;
+    d += ` L${x + 0.41 * c} ${B + S}`;
+    d += ` L${x + 0.45 * c} ${B}`;
+    d += ` L${x + 0.58 * c} ${B}`; // ST-сегмент
+    // T-хвиля (округла)
+    d += ` Q${x + 0.7 * c} ${B - T} ${x + 0.82 * c} ${B}`;
+    d += ` L${x + c} ${B}`;
+  }
+  return d;
 }
+
+function capnoPath(breaths: number): string {
+  const c = W / breaths;
+  const B = H * 0.82; // видих ≈ 0
+  const top = H * 0.24; // плато
+  let d = `M0 ${B}`;
+  for (let i = 0; i < breaths; i++) {
+    const x = i * c;
+    d += ` L${x + 0.14 * c} ${B}`;
+    d += ` C${x + 0.2 * c} ${B} ${x + 0.22 * c} ${top} ${x + 0.3 * c} ${top + 6}`; // різкий підйом
+    d += ` L${x + 0.66 * c} ${top}`; // плато з нахилом
+    d += ` C${x + 0.72 * c} ${top} ${x + 0.74 * c} ${B} ${x + 0.8 * c} ${B}`; // різке падіння
+    d += ` L${x + c} ${B}`;
+  }
+  return d;
+}
+
+const channels =
+  variant === 'line'
+    ? [{ key: 'ecg', d: ecgPath(9), color: 'var(--wave)' }]
+    : [
+        { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(7), color: 'var(--aqua)', delay: '0s' },
+        { key: 'co2', label: 'EtCO₂', value: '37', unit: 'mmHg', d: capnoPath(5), color: 'var(--amber)', delay: '1.1s' },
+      ];
 
 const uid = 'vt-' + Math.random().toString(36).slice(2, 8);
 ---
 
-<div class={`vitals vitals--${variant} ${className ?? ''}`} data-vitals aria-hidden="true">
-  <svg viewBox={`0 0 ${W} 100`} preserveAspectRatio="none" fill="none">
-    <defs>
-      <linearGradient id={`${uid}-fade`} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="var(--wave)" stop-opacity="0"></stop>
-        <stop offset="0.7" stop-color="var(--wave)" stop-opacity="0.55"></stop>
-        <stop offset="1" stop-color="var(--wave)" stop-opacity="1"></stop>
-      </linearGradient>
-    </defs>
-    <!-- Базова тьмяна крива (завжди видима, працює без анімації). -->
-    <path class="vitals__base" d={d} stroke="var(--wave)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-    <!-- Яскравий «сканер»-сегмент, що біжить уздовж кривої. -->
-    <path
-      class="vitals__scan"
-      d={d}
-      stroke={`url(#${uid}-fade)`}
-      stroke-width="2.6"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      style={`--len:${W}`}
-    ></path>
-  </svg>
-</div>
+{
+  variant === 'line' ? (
+    <div class={`vline ${className ?? ''}`} aria-hidden="true">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" fill="none">
+        <path class="vline__base" d={channels[0].d} stroke="var(--wave)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path class="vline__scan" d={channels[0].d} stroke="var(--wave)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+  ) : (
+    <div class={`monitor ${className ?? ''}`} role="img" aria-label="Живий вітальний монітор: ЕКГ та капнографія">
+      <div class="monitor__grid" aria-hidden="true" />
+      <div class="monitor__channels">
+        {channels.map((ch) => (
+          <div class="ch" style={`--ch:${ch.color}`}>
+            <div class="ch__meta">
+              <span class="ch__label">{ch.label}</span>
+              <span class="ch__value">
+                {ch.value}
+                <small>{ch.unit}</small>
+              </span>
+            </div>
+            <div class="ch__lane">
+              <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" fill="none">
+                <path class="ch__base" d={ch.d} stroke={ch.color} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                  class="ch__scan"
+                  d={ch.d}
+                  stroke={ch.color}
+                  stroke-width="2.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style={`--delay:${ch.delay}`}
+                />
+              </svg>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 <style>
-  .vitals {
+  /* ——— Тонка лінія (шапка) ——— */
+  .vline {
     width: 100%;
     height: 100%;
     overflow: hidden;
   }
-  .vitals svg {
+  .vline svg {
     display: block;
     width: 100%;
     height: 100%;
   }
-  .vitals__base {
-    opacity: 0.18;
+  .vline__base {
+    opacity: 0.22;
   }
-  .vitals__scan {
-    opacity: 0.9;
-    filter: drop-shadow(0 0 6px var(--glow)) drop-shadow(0 0 14px var(--glow));
-    /* Короткий яскравий сегмент + величезний розрив = «комета» на кривій. */
-    stroke-dasharray: 230 4000;
-    stroke-dashoffset: 4230;
-    animation: vitals-sweep 4.2s linear infinite;
+  .vline__scan {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 4px var(--glow));
+    stroke-dasharray: 140 4000;
+    stroke-dashoffset: 4140;
+    animation: vt-sweep 5s linear infinite;
   }
-  @keyframes vitals-sweep {
+
+  /* ——— Повний монітор (герой) ——— */
+  .monitor {
+    position: relative;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: radial-gradient(120% 140% at 50% 0%, rgba(79, 227, 208, 0.05), transparent 60%),
+      linear-gradient(180deg, #05100e, #071613);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.55), var(--shadow-1);
+    overflow: hidden;
+    padding: clamp(0.5rem, 1.6vw, 0.9rem) clamp(0.6rem, 2vw, 1.1rem);
+  }
+  /* Графік-сітка монітора. */
+  .monitor__grid {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, var(--gridc) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(90deg, var(--gridc) 0 1px, transparent 1px 22px);
+    --gridc: color-mix(in srgb, var(--aqua) 12%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+    pointer-events: none;
+  }
+  .monitor__channels {
+    position: relative;
+    display: grid;
+    gap: clamp(0.35rem, 1.4vw, 0.7rem);
+  }
+  .ch {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .ch__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    color: var(--ch);
+  }
+  .ch__label {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .ch__value {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(0.95rem, 3vw, 1.25rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 14px var(--glow);
+    font-variant-numeric: tabular-nums;
+  }
+  .ch__value small {
+    font-size: 0.55em;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-left: 0.25em;
+    letter-spacing: 0.06em;
+  }
+  .ch__lane {
+    height: clamp(30px, 6vw, 46px);
+  }
+  .ch__lane svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .ch__base {
+    opacity: 0.32;
+  }
+  .ch__scan {
+    opacity: 0.95;
+    filter: drop-shadow(0 0 5px var(--glow)) drop-shadow(0 0 12px var(--glow));
+    stroke-dasharray: 200 4000;
+    stroke-dashoffset: 4200;
+    animation: vt-sweep 4.4s linear infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes vt-sweep {
     to {
       stroke-dashoffset: 0;
     }
   }
 
-  /* Варіант тонкої лінії (шапка) — менше сяйва. */
-  .vitals--line .vitals__base {
-    opacity: 0.22;
-  }
-  .vitals--line .vitals__scan {
-    stroke-dasharray: 120 4000;
-    animation-duration: 5s;
-    filter: drop-shadow(0 0 4px var(--glow));
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .vitals__scan {
+    .vline__scan,
+    .ch__scan {
       animation: none;
       stroke-dasharray: none;
       stroke-dashoffset: 0;
-      opacity: 0.5;
-      filter: drop-shadow(0 0 4px var(--glow));
+      opacity: 0.55;
     }
   }
 </style>
