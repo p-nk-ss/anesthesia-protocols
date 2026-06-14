@@ -5,10 +5,8 @@ dist/
 # deps
 node_modules/
 
-# intermediate extraction artifacts
-doc/_extracted/
-doc/_ascii/
-doc/_images/
+# source materials — needed for development only, not deployed
+doc/
 
 # qa screenshots
 _shots/
