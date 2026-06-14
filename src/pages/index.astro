@@ -8,7 +8,8 @@ import { CATEGORY_LIST } from '../lib/categories';
 import { plural } from '../lib/plural';
 
 const all = (await getCollection('protocols')).filter((p) => !p.data.draft);
-all.sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, 'uk'));
+// Усередині кожної категорії — за абеткою (українська локаль).
+all.sort((a, b) => a.data.title.localeCompare(b.data.title, 'uk'));
 
 const byCategory = CATEGORY_LIST.map((cat) => ({
   ...cat,
@@ -23,7 +24,7 @@ const totalWord = plural(total, 'протокол', 'протоколи', 'пр�
   <section class="hero">
     <div class="container">
       <p class="eyebrow hero__eyebrow">
-        <span class="hero__live"></span>Периопераційний довідник · офлайн
+        <span class="hero__live"></span>Периопераційний довідник
       </p>
 
       <h1 class="hero__title">
@@ -47,10 +48,6 @@ const totalWord = plural(total, 'протокол', 'протоколи', 'пр�
         <div class="readout__ch">
           <dt>Категорії</dt>
           <dd>{String(byCategory.length).padStart(2, '0')}</dd>
-        </div>
-        <div class="readout__ch">
-          <dt>Доступ</dt>
-          <dd class="readout__ok">офлайн</dd>
         </div>
       </dl>
     </div>
@@ -171,13 +168,6 @@ const totalWord = plural(total, 'протокол', 'протоколи', 'пр�
       text-shadow: 0 0 22px var(--glow);
       font-variant-numeric: tabular-nums;
     }
-    .readout__ok {
-      font-size: var(--step-1) !important;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--mint) !important;
-    }
-
     .catalog {
       padding-bottom: var(--sp-7);
     }
