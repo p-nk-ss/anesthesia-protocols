@@ -1,0 +1,23 @@
+---
+title: Калькулятор інфузій
+description: Введіть вагу пацієнта — швидкість мл/год для адреналіну, норадреналіну, аміодарону, дофаміну та інших препаратів невідкладної допомоги.
+category: tools
+type: reference
+order: 50
+updated: 2026-01-01
+source:
+  name: Emergency Manual v4.4
+  org: Stanford Anesthesia Cognitive Aid Program
+  url: https://emergencymanual.stanford.edu/
+  license: CC BY-NC-ND 4.0
+---
+
+import InfusionCalculator from '../../components/InfusionCalculator.astro';
+
+Швидкий перерахунок швидкості безперервних інфузій за стандартними розведеннями
+Emergency Manual. Введіть вагу — колонка «мл/год» оновиться автоматично.
+
+<InfusionCalculator />
+
+Завантажувальні дози та концентрації наведено для довідки. Завжди звіряйте дозування
+з локальним протоколом і станом пацієнта.

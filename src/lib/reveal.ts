@@ -32,13 +32,16 @@ export function initReveal(): void {
   observer = new IntersectionObserver(
     (entries, obs) => {
       for (const entry of entries) {
-        if (entry.isIntersecting) {
+        // Високі блоки (довідкові сторінки): 12% елемента може бути більшим за
+        // вьюпорт і поріг ніколи не спрацює — показуємо за першого ж перетину.
+        const tall = entry.boundingClientRect.height > window.innerHeight * 0.9;
+        if (entry.isIntersecting && (tall || entry.intersectionRatio >= 0.12)) {
           entry.target.classList.add('is-visible');
           obs.unobserve(entry.target);
         }
       }
     },
-    { rootMargin: '0px 0px -10% 0px', threshold: 0.12 },
+    { rootMargin: '0px 0px -10% 0px', threshold: [0, 0.12] },
   );
 
   for (const el of targets) observer.observe(el);

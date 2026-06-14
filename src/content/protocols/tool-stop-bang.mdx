@@ -1,0 +1,26 @@
+---
+title: STOP-BANG — скринінг апное сну
+description: 'Калькулятор ризику обструктивного апное сну (OSA): 8 питань → сума 0–8 із градацією низького, середнього та високого ризику.'
+category: tools
+type: reference
+order: 20
+updated: 2026-01-01
+source:
+  name: STOP-BANG
+  org: Chung F, et al.
+  url: https://www.stopbang.ca/
+  license: STOP-Bang Questionnaire
+---
+
+import Calculator from '../../components/Calculator.astro';
+import { STOP_BANG } from '../../lib/scores';
+
+Опитувальник STOP-BANG — найбільш чутливий і валідизований скринінг
+обструктивного апное сну, коли полісомнографія недоступна. Дайте відповідь «Так»
+або «Ні» на кожен пункт — сума підрахується автоматично.
+
+<Calculator instrument={STOP_BANG} />
+
+Пацієнтів високого ризику ретельно обстежте на предмет важких дихальних шляхів,
+розгляньте періопераційну CPAP-терапію та забезпечте пильний нагляд за
+оксигенацією у післяопераційному періоді.

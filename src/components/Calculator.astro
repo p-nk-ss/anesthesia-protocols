@@ -1,0 +1,347 @@
+---
+/**
+ * Інтерактивний калькулятор-опитувальник.
+ * Серверний рендер семантичної форми (працює без JS: видно питання + легенду
+ * балів). calculator.ts додає живий підрахунок, анімоване табло та інтерпретацію.
+ */
+import type { ScoreInstrument } from '../lib/scores';
+
+interface Props {
+  instrument: ScoreInstrument;
+}
+const { instrument } = Astro.props;
+
+const maxScore = instrument.questions.reduce(
+  (sum, q) => sum + Math.max(...q.options.map((o) => o.value)),
+  0,
+);
+const id = instrument.id;
+const bandRange = (b: { min: number; max: number }) =>
+  b.min === b.max ? `${b.min}` : `${b.min}–${b.max}`;
+---
+
+<form class="calc" data-calc data-id={id} aria-label={instrument.title}>
+  <ol class="calc__qs">
+    {
+      instrument.questions.map((q, qi) => (
+        <li class="calc__q">
+          <fieldset class="calc__field">
+            <legend class="calc__legend">
+              <span class="calc__qnum">{qi + 1}</span>
+              <span class="calc__qtext">{q.label}</span>
+            </legend>
+            {q.hint && <p class="calc__hint">{q.hint}</p>}
+            <div class:list={['calc__opts', { 'is-binary': instrument.binary }]} role="radiogroup" aria-label={q.label}>
+              {q.options.map((o) => (
+                <label class="calc__opt">
+                  <input type="radio" name={`${id}-q${qi}`} value={o.value} />
+                  <span class="calc__opt-label">{o.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="calc__result" data-result hidden aria-live="polite">
+    <div class="calc__score">
+      <span class="calc__score-num" data-score>0</span>
+      <span class="calc__score-unit">/ {maxScore} {instrument.unit}</span>
+      <span class="calc__progress" data-progress aria-hidden="true"></span>
+    </div>
+    <div class="calc__band">
+      <p class="calc__band-label" data-band-label></p>
+      <p class="calc__band-detail" data-band-detail></p>
+    </div>
+  </div>
+
+  <button type="reset" class="calc__reset" data-reset hidden>
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+    Скинути
+  </button>
+
+  <details class="calc__bands">
+    <summary>Інтерпретація балів</summary>
+    <ul class="calc__bands-list">
+      {
+        instrument.bands.map((b) => (
+          <li data-sev={b.severity}>
+            <strong>
+              {bandRange(b)} {instrument.unit}
+            </strong>
+            <span>
+              {b.label} — {b.detail}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </details>
+
+  {instrument.note && <p class="calc__note">{instrument.note}</p>}
+
+  <script type="application/json" data-bands set:html={JSON.stringify(instrument.bands)} />
+</form>
+
+<script>
+  import { initCalculators } from './calculator';
+  document.addEventListener('astro:page-load', initCalculators);
+</script>
+
+<style>
+  .calc {
+    margin: 0;
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .calc__qs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-3);
+    counter-reset: none;
+  }
+  .calc__q {
+    margin: 0;
+  }
+  .calc__field {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--glass);
+    padding: var(--sp-3) var(--sp-4);
+    margin: 0;
+    min-inline-size: 0;
+  }
+  .calc__legend {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: baseline;
+    padding: 0;
+    margin: 0 0 var(--sp-3);
+    width: 100%;
+  }
+  .calc__qnum {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
+    border-radius: 7px;
+    min-width: 1.7rem;
+    height: 1.7rem;
+    display: inline-grid;
+    place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .calc__qtext {
+    font-size: var(--step-0);
+    line-height: 1.35;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .calc__hint {
+    margin: -0.4rem 0 var(--sp-3) calc(1.7rem + var(--sp-3));
+    font-size: var(--step--1);
+    color: var(--ink-3);
+  }
+
+  .calc__opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .calc__opts.is-binary .calc__opt {
+    flex: 1 1 0;
+    min-width: 6rem;
+  }
+
+  .calc__opt {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink-2);
+    cursor: pointer;
+    text-align: center;
+    line-height: 1.25;
+    font-size: var(--step--1);
+    transition: transform 0.2s var(--spring), border-color 0.2s var(--ease),
+      color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .calc__opts:not(.is-binary) .calc__opt {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  /* Прихований нативний radio — лишається доступним для клавіатури/скрінрідера. */
+  .calc__opt input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+  }
+  .calc__opt:hover {
+    border-color: var(--primary);
+    color: var(--ink);
+  }
+  .calc__opt:has(input:focus-visible) {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .calc__opt:has(input:checked),
+  .calc__opt.is-picked {
+    border-color: var(--primary);
+    color: var(--bg);
+    background: var(--primary);
+    box-shadow: 0 0 22px -6px var(--glow);
+    transform: translateY(-1px);
+    font-weight: 600;
+  }
+
+  /* —— Результат —— */
+  .calc__result {
+    --sev: var(--sev-info);
+    --sev-soft: var(--sev-info-soft);
+    border: 1px solid color-mix(in srgb, var(--sev) 40%, var(--border));
+    border-left: 3px solid var(--sev);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(180deg, var(--sev-soft), transparent);
+    padding: var(--sp-4) var(--sp-5);
+    box-shadow: 0 0 32px -16px var(--sev);
+    animation: calc-in 0.4s var(--ease);
+  }
+  .calc__result[data-sev='success'] { --sev: var(--sev-success); --sev-soft: var(--sev-success-soft); }
+  .calc__result[data-sev='warning'] { --sev: var(--sev-warning); --sev-soft: var(--sev-warning-soft); }
+  .calc__result[data-sev='critical'] { --sev: var(--sev-critical); --sev-soft: var(--sev-critical-soft); }
+  @keyframes calc-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .calc__score {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .calc__score-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--sev);
+    text-shadow: 0 0 24px color-mix(in srgb, var(--sev) 45%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+  .calc__score-unit {
+    font-family: var(--font-mono);
+    font-size: var(--step-0);
+    color: var(--ink-3);
+  }
+  .calc__progress {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    align-self: center;
+  }
+  .calc__progress[data-complete='1'] { color: var(--sev); }
+  .calc__band-label {
+    margin: var(--sp-3) 0 0;
+    font-weight: 600;
+    font-size: var(--step-1);
+    color: var(--sev);
+  }
+  .calc__band-detail {
+    margin: var(--sp-1) 0 0;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+
+  .calc__reset {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-height: 40px;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--glass-2);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    cursor: pointer;
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .calc__reset:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* —— Легенда смуг (завжди видима; ключ без JS) —— */
+  .calc__bands {
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-3);
+  }
+  .calc__bands summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .calc__bands summary:hover { color: var(--ink); }
+  .calc__bands-list {
+    list-style: none;
+    margin: var(--sp-3) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-2);
+  }
+  .calc__bands-list li {
+    --sev: var(--sev-info);
+    margin: 0;
+    padding-left: var(--sp-3);
+    border-left: 2px solid var(--sev);
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    line-height: 1.45;
+  }
+  .calc__bands-list li[data-sev='success'] { --sev: var(--sev-success); }
+  .calc__bands-list li[data-sev='warning'] { --sev: var(--sev-warning); }
+  .calc__bands-list li[data-sev='critical'] { --sev: var(--sev-critical); }
+  .calc__bands-list strong {
+    font-family: var(--font-mono);
+    color: var(--sev);
+    margin-right: 0.4em;
+  }
+
+  .calc__note {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .calc__opt,
+    .calc__reset { transition: none; }
+    .calc__result { animation: none; }
+  }
+</style>

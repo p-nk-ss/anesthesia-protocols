@@ -1,0 +1,204 @@
+---
+/**
+ * Інтерактивний селектор класифікації ASA-PS.
+ * Чисто CSS (radio + :has) — без JS, працює офлайн і переживає View Transitions.
+ * Без підтримки :has показуються всі класи списком (прогресивне покращення).
+ */
+import { ASA_CLASSES, ASA_EMERGENCY_NOTE } from '../lib/scores';
+
+const rows: Array<{ key: 'adults' | 'pediatric' | 'obstetric'; label: string }> = [
+  { key: 'adults', label: 'Дорослі' },
+  { key: 'pediatric', label: 'Педіатрія' },
+  { key: 'obstetric', label: 'Акушерство' },
+];
+---
+
+<div class="asa" role="group" aria-label="Класифікація фізичного стану ASA-PS">
+  <div class="asa__segs" role="radiogroup" aria-label="Оберіть клас ASA">
+    {
+      ASA_CLASSES.map((c, i) => (
+        <label class="asa__seg" data-sev={c.severity}>
+          <input type="radio" name="asa-class" id={`asa-${i + 1}`} value={i + 1} checked={i === 0} />
+          <span class="asa__seg-label">{c.code}</span>
+        </label>
+      ))
+    }
+  </div>
+
+  <div class="asa__panels">
+    {
+      ASA_CLASSES.map((c, i) => (
+        <article class="asa__panel" data-for={i + 1} data-sev={c.severity}>
+          <h3 class="asa__panel-code">{c.code}</h3>
+          <p class="asa__panel-def">{c.definition}</p>
+          <dl class="asa__rows">
+            {rows.map((r) =>
+              c[r.key] ? (
+                <div class="asa__row">
+                  <dt>{r.label}</dt>
+                  <dd>{c[r.key]}</dd>
+                </div>
+              ) : null,
+            )}
+          </dl>
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="asa__note">{ASA_EMERGENCY_NOTE}</p>
+</div>
+
+<style>
+  .asa {
+    display: grid;
+    gap: var(--sp-4);
+  }
+
+  .asa__segs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .asa__seg {
+    --sev: var(--sev-info);
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 4.2rem;
+    min-height: 44px;
+    display: grid;
+    place-items: center;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: transform 0.2s var(--spring), border-color 0.2s var(--ease),
+      background 0.2s var(--ease), color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+  .asa__seg[data-sev='success'] { --sev: var(--sev-success); }
+  .asa__seg[data-sev='info'] { --sev: var(--sev-info); }
+  .asa__seg[data-sev='warning'] { --sev: var(--sev-warning); }
+  .asa__seg[data-sev='critical'] { --sev: var(--sev-critical); }
+  .asa__seg input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+  }
+  .asa__seg-label {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .asa__seg:hover {
+    border-color: var(--sev);
+  }
+  .asa__seg:has(input:focus-visible) {
+    outline: 2px solid var(--sev);
+    outline-offset: 2px;
+  }
+  .asa__seg:has(input:checked) {
+    border-color: var(--sev);
+    background: color-mix(in srgb, var(--sev) 16%, var(--surface));
+    box-shadow: 0 0 22px -8px var(--sev);
+    transform: translateY(-1px);
+  }
+  .asa__seg:has(input:checked) .asa__seg-label {
+    color: var(--sev);
+  }
+
+  .asa__panel {
+    --sev: var(--sev-info);
+    border: 1px solid color-mix(in srgb, var(--sev) 38%, var(--border));
+    border-left: 3px solid var(--sev);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--sev) 9%, transparent), transparent);
+    padding: var(--sp-4) var(--sp-5);
+  }
+  .asa__panel[data-sev='success'] { --sev: var(--sev-success); }
+  .asa__panel[data-sev='info'] { --sev: var(--sev-info); }
+  .asa__panel[data-sev='warning'] { --sev: var(--sev-warning); }
+  .asa__panel[data-sev='critical'] { --sev: var(--sev-critical); }
+  .asa__panel + .asa__panel {
+    margin-top: var(--sp-3);
+  }
+  .asa__panel-code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--step-1);
+    color: var(--sev);
+  }
+  .asa__panel-def {
+    margin: var(--sp-1) 0 var(--sp-3);
+    font-weight: 600;
+    color: var(--ink);
+    font-size: var(--step-0);
+  }
+  .asa__rows {
+    margin: 0;
+    display: grid;
+    gap: var(--sp-2);
+  }
+  .asa__row {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: var(--sp-3);
+  }
+  .asa__row dt {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sev);
+    padding-top: 1px;
+  }
+  .asa__row dd {
+    margin: 0;
+    color: var(--ink-2);
+    line-height: 1.5;
+    font-size: var(--step--1);
+  }
+
+  .asa__note {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  /* Fallback без :has → усі панелі видимі списком. */
+  @supports selector(:has(*)) {
+    .asa__panel {
+      display: none;
+    }
+    .asa__panel + .asa__panel {
+      margin-top: 0;
+    }
+    .asa:has(#asa-1:checked) .asa__panel[data-for='1'],
+    .asa:has(#asa-2:checked) .asa__panel[data-for='2'],
+    .asa:has(#asa-3:checked) .asa__panel[data-for='3'],
+    .asa:has(#asa-4:checked) .asa__panel[data-for='4'],
+    .asa:has(#asa-5:checked) .asa__panel[data-for='5'],
+    .asa:has(#asa-6:checked) .asa__panel[data-for='6'] {
+      display: block;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .asa__row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .asa__seg {
+      transition: none;
+    }
+  }
+</style>

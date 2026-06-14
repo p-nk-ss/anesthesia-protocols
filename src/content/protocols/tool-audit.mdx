@@ -1,0 +1,27 @@
+---
+title: AUDIT — скринінг вживання алкоголю
+description: 'Калькулятор тесту AUDIT (ВООЗ): 10 питань → сума 0–40 з інтерпретацією рівня ризику від низького до можливої залежності.'
+category: tools
+type: reference
+order: 30
+updated: 2026-01-01
+source:
+  name: AUDIT
+  org: World Health Organization
+  url: https://www.who.int/publications/i/item/audit-the-alcohol-use-disorders-identification-test-guidelines-for-use-in-primary-health-care
+  license: WHO AUDIT
+---
+
+import Calculator from '../../components/Calculator.astro';
+import { AUDIT } from '../../lib/scores';
+
+Тест AUDIT виявляє розлади, пов’язані з уживанням алкоголю. Комп’ютеризована
+самооцінка краща за усне опитування для виявлення таких пацієнтів перед операцією.
+Оберіть відповідь на кожне питання — сума підрахується автоматично.
+
+<Calculator instrument={AUDIT} />
+
+Рекомендується передопераційна відмова від алкоголю, включно з фармакологічною
+профілактикою рецидиву та стану відміни — це суттєво знижує частоту
+післяопераційних ускладнень. AUDIT-C та повний AUDIT не є взаємозамінними під час
+передопераційної оцінки.

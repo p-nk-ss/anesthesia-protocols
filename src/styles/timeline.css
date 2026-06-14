@@ -12,6 +12,7 @@
   width: 2px;
   height: calc(100% - 48px);
   border-radius: 2px;
+  z-index: 0;
 }
 .tl-rail {
   background: var(--border-strong);
@@ -60,10 +61,11 @@
   font-weight: 600;
   font-size: 1.05rem;
 }
-/* Вузол «засвічується», коли промінь проходить повз. */
+/* Вузол «засвічується», коли промінь проходить повз. Тло лишається непрозорим,
+   щоб світна рейка не просвічувала крізь коло та цифру. */
 .tl-step.lit .tl-node {
   transform: scale(1.06);
-  background: var(--sev-soft);
+  background: color-mix(in srgb, var(--sev) 16%, var(--surface));
   border-color: var(--sev);
   color: var(--sev);
   box-shadow: 0 0 0 4px var(--sev-soft), 0 0 22px -2px var(--sev);
