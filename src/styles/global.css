@@ -81,9 +81,8 @@
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ——— Темна тема (основна) ——— */
-:root,
-:root[data-theme='dark'] {
+/* ——— Темна тема (єдина) ——— */
+:root {
   color-scheme: dark;
 
   --ink-900: #06100f;
@@ -108,6 +107,7 @@
   --mint: #5ce0a8;
   --amber: #ffb454;
   --coral: #ff6b6b;
+  --spo2: #5bc8ff;
 
   --primary: #4fe3d0;
   --primary-ink: #bff6ef;
@@ -135,58 +135,6 @@
   --scene: radial-gradient(1100px 680px at 78% -8%, rgba(79, 227, 208, 0.14), transparent 60%),
     radial-gradient(900px 600px at 8% 0%, rgba(43, 168, 156, 0.1), transparent 55%),
     linear-gradient(180deg, #06100f 0%, #07130f 40%, #081512 100%);
-}
-
-/* ——— Світла тема («денний монітор») ——— */
-:root[data-theme='light'] {
-  color-scheme: light;
-
-  --bg: #eaf1f0;
-  --bg-tint: #e1ebe9;
-
-  --glass: rgba(255, 255, 255, 0.66);
-  --glass-2: rgba(255, 255, 255, 0.85);
-  --surface: #ffffff;
-  --surface-2: #f3f8f7;
-
-  --border: rgba(8, 42, 39, 0.1);
-  --border-strong: rgba(8, 42, 39, 0.18);
-
-  --ink: #0c1c1a;
-  --ink-2: #3c5651;
-  --ink-3: #607e79;
-
-  --aqua: #0c8f86;
-  --mint: #1f9d68;
-  --amber: #b5710a;
-  --coral: #cf3b34;
-
-  --primary: #0c8f86;
-  --primary-ink: #075952;
-  --primary-soft: rgba(12, 143, 134, 0.12);
-  --on-primary: #ffffff;
-
-  --focus: rgba(12, 143, 134, 0.5);
-  --wave: #0c8f86;
-  --glow: rgba(12, 143, 134, 0.22);
-
-  --sev-info: #0c8f86;
-  --sev-info-soft: rgba(12, 143, 134, 0.12);
-  --sev-success: #1f9d68;
-  --sev-success-soft: rgba(31, 157, 104, 0.13);
-  --sev-warning: #b5710a;
-  --sev-warning-soft: rgba(181, 113, 10, 0.14);
-  --sev-critical: #cf3b34;
-  --sev-critical-soft: rgba(207, 59, 52, 0.12);
-
-  --shadow-1: 0 1px 2px rgba(8, 30, 28, 0.06), 0 8px 24px rgba(8, 30, 28, 0.07);
-  --shadow-2: 0 24px 50px rgba(8, 30, 28, 0.14);
-  --glow-aqua: 0 0 0 1px rgba(12, 143, 134, 0.2), 0 14px 40px rgba(12, 143, 134, 0.14);
-
-  --grain-opacity: 0.03;
-  --scene: radial-gradient(1100px 680px at 80% -10%, rgba(12, 143, 134, 0.12), transparent 60%),
-    radial-gradient(820px 560px at 6% 0%, rgba(12, 143, 134, 0.07), transparent 55%),
-    linear-gradient(180deg, #eef3f2 0%, #e9f1ef 100%);
 }
 
 *,

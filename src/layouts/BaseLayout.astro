@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import ThemeToggle from '../components/ThemeToggle.astro';
 import VitalsTrace from '../components/VitalsTrace.astro';
 
 interface Props {
@@ -36,19 +35,6 @@ const year = new Date().getFullYear();
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="uk_UA" />
 
-    {/* No-flash: тема до першого рендера. За замовчуванням — темна («монітор»). */}
-    <script is:inline>
-      (function () {
-        try {
-          var saved = localStorage.getItem('theme');
-          var theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
-          document.documentElement.setAttribute('data-theme', theme);
-          var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', theme === 'light' ? '#eaf1f0' : '#07120f');
-        } catch (e) {}
-      })();
-    </script>
-
     <ClientRouter />
   </head>
   <body>
@@ -73,7 +59,9 @@ const year = new Date().getFullYear();
             <span class="brand__sub">анестезіолога</span>
           </span>
         </a>
-        <ThemeToggle />
+        <span class="site-status" aria-hidden="true">
+          <span class="site-status__dot"></span>офлайн
+        </span>
       </div>
       <div class="site-header__pulse"><VitalsTrace variant="line" /></div>
     </header>
@@ -160,6 +148,25 @@ const year = new Date().getFullYear();
         color: var(--ink-3);
         margin-top: 4px;
       }
+      .site-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 500;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .site-status__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--mint);
+        box-shadow: 0 0 8px var(--mint);
+      }
+
       .site-header__pulse {
         height: 14px;
         opacity: 0.8;
