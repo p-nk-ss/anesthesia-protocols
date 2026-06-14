@@ -15,7 +15,7 @@ const { title, description, category, updated, source } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class={`container ref ${category === 'tools' ? 'ref--wide' : ''}`}>
+  <article class={`container ref ${category === 'tools' || category === 'fluid' ? 'ref--wide' : ''}`}>
     <ProtocolHero
       title={title}
       description={description}
@@ -38,6 +38,10 @@ const { title, description, category, updated, source } = Astro.props;
     /* Сторінки-інструменти (калькулятори) ширші — таблиці вміщаються без скролу. */
     .ref--wide {
       max-width: 64rem;
+    }
+    /* На широких сторінках текст і таблиці використовують усю ширину контейнера. */
+    .ref--wide :global(.prose) {
+      max-width: none;
     }
     .reading {
       background: var(--glass);

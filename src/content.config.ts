@@ -7,7 +7,7 @@ import { glob } from 'astro/loaders';
  *   - 'algorithm' — покрокова вертикальна таймлінія (потрібен масив steps[])
  *   - 'reference' — довідковий текст (тіло Markdown/MDX)
  */
-export const CATEGORIES = ['airway', 'emergencies', 'preoperative', 'tools', 'checklists'] as const;
+export const CATEGORIES = ['airway', 'emergencies', 'preoperative', 'fluid', 'tools', 'checklists'] as const;
 
 const protocols = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/protocols' }),
