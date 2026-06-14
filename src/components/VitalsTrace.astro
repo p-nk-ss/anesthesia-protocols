@@ -52,7 +52,8 @@ function plethPath(cycles: number): string {
 
 function capnoPath(breaths: number): string {
   const c = W / breaths;
-  const B = H * 0.82, top = H * 0.24;
+  // top нижче (ближче до 0) = вища крива. Підняли амплітуду ≈ на 30%.
+  const B = H * 0.82, top = H * 0.07;
   let d = `M0 ${B}`;
   for (let i = 0; i < breaths; i++) {
     const x = i * c;
@@ -69,10 +70,12 @@ const channels =
   variant === 'line'
     ? [{ key: 'ecg', d: ecgPath(9), color: 'var(--wave)' }]
     : [
-        { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(10), color: 'var(--aqua)', sweep: '4.6s' },
-        { key: 'spo2', label: 'SpO₂ · pleth', value: '98', unit: '%', d: plethPath(10), color: 'var(--spo2)', sweep: '4.6s' },
-        // Капнографія тече з частотою дихання — розгортка вп'ятеро повільніша.
-        { key: 'co2', label: 'EtCO₂', value: '37', unit: 'mmHg', d: capnoPath(6), color: 'var(--amber)', sweep: '23s' },
+        // Пульсові канали: швидка розгортка, великий розрив пунктиру.
+        { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(10), color: 'var(--aqua)', sweep: '4.6s', gap: 4000, off: 4220 },
+        { key: 'spo2', label: 'SpO₂ · pleth', value: '98', unit: '%', d: plethPath(10), color: 'var(--spo2)', sweep: '4.6s', gap: 4000, off: 4220 },
+        // Капнографія: повільна розгортка (частота дихання) + малий розрив,
+        // щоб після проходу промінь повертався вже за ~2 с.
+        { key: 'co2', label: 'EtCO₂', value: '37', unit: 'mmHg', d: capnoPath(6), color: 'var(--amber)', sweep: '17s', gap: 2120, off: 2340 },
       ];
 ---
 
@@ -91,7 +94,7 @@ const channels =
       <div class="monitor__flicker" aria-hidden="true" />
       <div class="monitor__channels">
         {channels.map((ch) => (
-          <div class="ch" style={`--ch:${ch.color};--sweep:${ch.sweep}`}>
+          <div class="ch" style={`--ch:${ch.color};--sweep:${ch.sweep};--gap:${ch.gap};--off:${ch.off}`}>
             <div class="ch__meta">
               <span class="ch__label">{ch.label}</span>
               <span class="ch__value">
@@ -229,8 +232,8 @@ const channels =
   .ch__scan {
     opacity: 0.95;
     filter: drop-shadow(0 0 5px var(--ch)) drop-shadow(0 0 12px color-mix(in srgb, var(--ch) 45%, transparent));
-    stroke-dasharray: 220 4000;
-    stroke-dashoffset: 4220;
+    stroke-dasharray: 220 var(--gap, 4000);
+    stroke-dashoffset: var(--off, 4220);
     animation: vt-sweep var(--sweep, 4.6s) linear infinite;
   }
 
