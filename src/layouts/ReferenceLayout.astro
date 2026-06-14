@@ -15,7 +15,7 @@ const { title, description, category, updated, source } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class={`container ref ${category === 'tools' || category === 'fluid' ? 'ref--wide' : ''}`}>
+  <article class={`container ref ${category === 'tools' || category === 'fluid' || category === 'coagulation' ? 'ref--wide' : ''}`}>
     <ProtocolHero
       title={title}
       description={description}
