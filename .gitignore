@@ -8,6 +8,7 @@ node_modules/
 # intermediate extraction artifacts
 doc/_extracted/
 doc/_ascii/
+doc/_images/
 
 # qa screenshots
 _shots/

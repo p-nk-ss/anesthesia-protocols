@@ -130,6 +130,104 @@
   color: var(--sev);
 }
 
+/* —— Схема етапу (figure) + lightbox —— */
+.tl-fig {
+  margin: var(--sp-4) 0 0;
+}
+.tl-fig__btn {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: #f3f5f8;
+  cursor: zoom-in;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.tl-fig__btn img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
+.tl-fig__btn:hover,
+.tl-fig__btn:focus-visible {
+  border-color: var(--sev, var(--primary));
+  box-shadow: 0 0 0 1px var(--sev, var(--primary)), 0 10px 30px -12px var(--sev, var(--primary));
+  outline: none;
+}
+.tl-fig__hint {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3em 0.6em;
+  border-radius: 999px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(4px);
+}
+.tl-fig figcaption {
+  margin-top: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+.lightbox {
+  border: none;
+  padding: 0;
+  margin: auto;
+  max-width: 100vw;
+  max-height: 100dvh;
+  background: transparent;
+  overflow: visible;
+}
+.lightbox::backdrop {
+  background: rgba(3, 9, 8, 0.86);
+  backdrop-filter: blur(5px);
+}
+.lightbox[open] {
+  display: grid;
+  place-items: center;
+}
+.lightbox img {
+  max-width: 95vw;
+  max-height: 90dvh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.lightbox__close {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--glass-2);
+  color: var(--ink);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.lightbox__close:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
 /* Severity → колірні токени. */
 .tl-step[data-severity='info'] {
   --sev: var(--sev-info);

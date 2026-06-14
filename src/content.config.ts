@@ -39,6 +39,9 @@ const protocols = defineCollection({
               items: z.array(z.string()).optional(),
               severity: z.enum(['info', 'warning', 'critical', 'success']).optional(),
               label: z.string().optional(),
+              // Схема/ілюстрація етапу: шлях до зображення (у /public) + підпис.
+              image: z.string().optional(),
+              imageCaption: z.string().optional(),
             }),
           )
           .optional(),
