@@ -1,5 +1,29 @@
-/* Вертикальна таймлінія кроків алгоритму. */
+/* Вертикальна таймлінія кроків алгоритму — «світний промінь монітора». */
 .timeline {
+  position: relative;
+}
+
+/* Базова тьмяна рейка + світний заповнювач (scaleY керується timeline.ts). */
+.tl-rail,
+.tl-rail__fill {
+  position: absolute;
+  left: 23px;
+  top: 24px;
+  width: 2px;
+  height: calc(100% - 48px);
+  border-radius: 2px;
+}
+.tl-rail {
+  background: var(--border-strong);
+}
+.tl-rail__fill {
+  background: linear-gradient(180deg, var(--aqua), var(--mint));
+  transform: scaleY(0);
+  transform-origin: top;
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.tl-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -9,7 +33,7 @@
 .tl-step {
   position: relative;
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 48px 1fr;
   gap: var(--sp-4);
   padding-bottom: var(--sp-5);
 }
@@ -17,45 +41,47 @@
   padding-bottom: 0;
 }
 
-/* Рейка з'єднує вузли. */
-.tl-step::before {
-  content: '';
-  position: absolute;
-  left: 21px;
-  top: 44px;
-  bottom: -4px;
-  width: 2px;
-  background: var(--border-strong);
-}
-.tl-step:last-child::before {
-  display: none;
-}
-
 .tl-node {
   position: relative;
   z-index: 1;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--sev-soft, var(--surface-2));
-  border: 2px solid var(--sev, var(--border-strong));
-  color: var(--sev, var(--ink-2));
+  background: var(--surface);
+  border: 2px solid var(--border-strong);
+  color: var(--ink-3);
+  transition: transform 0.35s var(--spring), border-color 0.35s var(--ease),
+    color 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.35s var(--ease);
 }
 .tl-num {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.05rem;
+}
+/* Вузол «засвічується», коли промінь проходить повз. */
+.tl-step.lit .tl-node {
+  transform: scale(1.06);
+  background: var(--sev-soft);
+  border-color: var(--sev);
+  color: var(--sev);
+  box-shadow: 0 0 0 4px var(--sev-soft), 0 0 22px -2px var(--sev);
 }
 
 .tl-card {
-  background: var(--surface);
+  background: var(--glass);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--sev, var(--primary));
+  border-left: 3px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: var(--sp-4) var(--sp-5);
-  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-left-color 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+.tl-step.lit .tl-card {
+  border-left-color: var(--sev);
+  box-shadow: var(--shadow-1), 0 0 26px -14px var(--sev);
 }
 
 .tl-meta {
@@ -69,18 +95,19 @@
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: var(--step--1);
-  letter-spacing: 0.04em;
-  color: var(--sev, var(--primary));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sev);
 }
 .tl-sev {
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  padding: 0.15em 0.55em;
+  padding: 0.2em 0.6em;
   border-radius: 999px;
-  color: var(--sev, var(--ink-2));
-  background: var(--sev-soft, var(--surface-2));
+  color: var(--sev);
+  background: var(--sev-soft);
 }
 .tl-title {
   font-size: var(--step-1);
@@ -99,8 +126,11 @@
 .tl-items li {
   margin-bottom: var(--sp-1);
 }
+.tl-items li::marker {
+  color: var(--sev);
+}
 
-/* Severity → колірні токени вузла/картки. */
+/* Severity → колірні токени. */
 .tl-step[data-severity='info'] {
   --sev: var(--sev-info);
   --sev-soft: var(--sev-info-soft);
@@ -118,32 +148,20 @@
   --sev-soft: var(--sev-critical-soft);
 }
 
-/* —— Поява при прокрутці —— */
-/* Прихований стан застосовується ЛИШЕ коли JS додав .reveal-on (див. timeline-reveal.ts). */
-@media (prefers-reduced-motion: no-preference) {
-  .tl-step.reveal-on {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
-  }
-  .tl-step.reveal-on.is-visible {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 @media (max-width: 30rem) {
   .tl-step {
-    grid-template-columns: 36px 1fr;
+    grid-template-columns: 40px 1fr;
     gap: var(--sp-3);
   }
   .tl-node {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
-  .tl-step::before {
-    left: 17px;
-    top: 36px;
+  .tl-rail,
+  .tl-rail__fill {
+    left: 19px;
+    top: 20px;
+    height: calc(100% - 40px);
   }
   .tl-card {
     padding: var(--sp-3) var(--sp-4);

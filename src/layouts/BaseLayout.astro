@@ -1,7 +1,8 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import ThemeToggle from '../components/ThemeToggle.astro';
-import Capnogram from '../components/Capnogram.astro';
+import VitalsTrace from '../components/VitalsTrace.astro';
 
 interface Props {
   title?: string;
@@ -29,33 +30,44 @@ const year = new Date().getFullYear();
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#f4f7f7" />
+    <meta name="theme-color" content="#07120f" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="uk_UA" />
 
-    {/* No-flash: виставляємо тему до першого рендера. */}
+    {/* No-flash: тема до першого рендера. За замовчуванням — темна («монітор»). */}
     <script is:inline>
       (function () {
         try {
           var saved = localStorage.getItem('theme');
-          var theme =
-            saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          var theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
           document.documentElement.setAttribute('data-theme', theme);
           var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', theme === 'dark' ? '#0c1417' : '#f4f7f7');
+          if (m) m.setAttribute('content', theme === 'light' ? '#eaf1f0' : '#07120f');
         } catch (e) {}
       })();
     </script>
+
+    <ClientRouter />
   </head>
   <body>
     <a class="skip-link" href="#main">Перейти до вмісту</a>
 
-    <header class="site-header">
+    <header class="site-header" transition:persist="site-header">
       <div class="container site-header__inner">
         <a class="brand" href="/" aria-label={`${siteName} — на головну`}>
-          <span class="brand__mark"><Capnogram /></span>
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 40 24" fill="none" preserveAspectRatio="none">
+              <path
+                d="M2 15 H11 C13 15 13.5 5 16 5 H18 C20.5 5 21 15 23 15 H38"
+                stroke="var(--wave)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </span>
           <span class="brand__text">
             <span class="brand__name">Протоколи</span>
             <span class="brand__sub">анестезіолога</span>
@@ -63,10 +75,10 @@ const year = new Date().getFullYear();
         </a>
         <ThemeToggle />
       </div>
-      <div class="site-header__pulse" aria-hidden="true"><Capnogram animate /></div>
+      <div class="site-header__pulse"><VitalsTrace variant="line" /></div>
     </header>
 
-    <main id="main">
+    <main id="main" transition:animate="fade">
       <slot />
     </main>
 
@@ -77,6 +89,12 @@ const year = new Date().getFullYear();
           navigator.serviceWorker.register('/sw.js').catch(function () {});
         });
       }
+    </script>
+
+    {/* Глобальна поява при прокрутці; переініціалізація після View Transitions. */}
+    <script>
+      import { initReveal } from '../lib/reveal';
+      document.addEventListener('astro:page-load', initReveal);
     </script>
 
     <footer class="site-footer">
@@ -93,8 +111,9 @@ const year = new Date().getFullYear();
         position: sticky;
         top: 0;
         z-index: 20;
-        background: color-mix(in srgb, var(--bg) 86%, transparent);
-        backdrop-filter: saturate(1.4) blur(10px);
+        background: color-mix(in srgb, var(--bg) 72%, transparent);
+        backdrop-filter: saturate(1.6) blur(14px);
+        -webkit-backdrop-filter: saturate(1.6) blur(14px);
         border-bottom: 1px solid var(--border);
       }
       .site-header__inner {
@@ -112,10 +131,14 @@ const year = new Date().getFullYear();
         color: var(--ink);
       }
       .brand__mark {
-        width: 46px;
+        width: 44px;
         height: 26px;
         flex: none;
-        opacity: 0.9;
+        filter: drop-shadow(0 0 6px var(--glow));
+      }
+      .brand__mark svg {
+        width: 100%;
+        height: 100%;
       }
       .brand__text {
         display: flex;
@@ -125,39 +148,38 @@ const year = new Date().getFullYear();
       .brand__name {
         font-family: var(--font-display);
         font-weight: 700;
-        font-size: 1.2rem;
+        font-size: 1.22rem;
         letter-spacing: -0.01em;
       }
       .brand__sub {
         font-family: var(--font-mono);
-        font-size: 0.66rem;
-        letter-spacing: 0.22em;
+        font-size: 0.6rem;
+        font-weight: 500;
+        letter-spacing: 0.26em;
         text-transform: uppercase;
         color: var(--ink-3);
-        margin-top: 3px;
+        margin-top: 4px;
       }
       .site-header__pulse {
-        height: 4px;
-        opacity: 0.5;
-      }
-      .site-header__pulse :global(svg) {
-        height: 16px;
-        margin-top: -6px;
+        height: 14px;
+        opacity: 0.8;
       }
 
       .site-footer {
-        margin-top: var(--sp-8);
+        margin-top: var(--sp-9);
         border-top: 1px solid var(--border);
-        background: var(--bg-tint);
+        background: color-mix(in srgb, var(--bg) 60%, transparent);
       }
       .site-footer__inner {
-        padding-block: var(--sp-5);
+        padding-block: var(--sp-6);
       }
       .site-footer p {
         margin: 0;
+        font-family: var(--font-mono);
         font-size: var(--step--1);
         color: var(--ink-3);
-        max-width: 42rem;
+        max-width: 44rem;
+        line-height: 1.7;
       }
     </style>
   </body>

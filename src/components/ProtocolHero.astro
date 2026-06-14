@@ -56,9 +56,22 @@ const updatedStr = updated
 
 <style>
   .phero {
-    padding-block: var(--sp-6) var(--sp-5);
+    position: relative;
+    padding-block: var(--sp-7) var(--sp-5);
     border-bottom: 1px solid var(--border);
     margin-bottom: var(--sp-6);
+  }
+  /* Світний кант категорії зверху. */
+  .phero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 64px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--primary);
+    box-shadow: 0 0 18px var(--glow);
   }
   .phero__back {
     display: inline-flex;
@@ -80,8 +93,10 @@ const updatedStr = updated
     margin-bottom: var(--sp-3);
   }
   .phero__title {
-    font-size: var(--step-3);
-    margin: 0 0 var(--sp-3);
+    font-size: var(--step-4);
+    line-height: 1.05;
+    margin: 0 0 var(--sp-4);
+    letter-spacing: -0.02em;
   }
   .phero__desc {
     max-width: var(--maxw-read);

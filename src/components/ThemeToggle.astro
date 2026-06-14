@@ -16,59 +16,67 @@
   .theme-toggle {
     display: inline-grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    border: 1px solid var(--border-strong);
+    background: var(--glass);
     color: var(--ink-2);
     cursor: pointer;
-    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), transform 0.2s var(--spring);
   }
   .theme-toggle:hover {
     color: var(--primary);
-    border-color: var(--border-strong);
+    border-color: var(--primary);
+    box-shadow: var(--glow-aqua);
+  }
+  .theme-toggle:active {
+    transform: scale(0.94);
   }
   .theme-toggle svg {
     grid-area: 1 / 1;
-    transition: opacity 0.2s var(--ease), transform 0.3s var(--ease);
+    transition: opacity 0.25s var(--ease), transform 0.4s var(--spring);
   }
-  /* Показуємо доречну іконку залежно від поточної теми. */
   :global(:root[data-theme='dark']) .t-sun {
     opacity: 1;
     transform: rotate(0);
   }
   :global(:root[data-theme='dark']) .t-moon {
     opacity: 0;
-    transform: rotate(-40deg) scale(0.6);
+    transform: rotate(-50deg) scale(0.5);
   }
-  :global(:root[data-theme='light']) .t-sun,
-  :global(:root:not([data-theme='dark'])) .t-sun {
+  :global(:root[data-theme='light']) .t-sun {
     opacity: 0;
-    transform: rotate(40deg) scale(0.6);
+    transform: rotate(50deg) scale(0.5);
   }
-  :global(:root[data-theme='light']) .t-moon,
-  :global(:root:not([data-theme='dark'])) .t-moon {
+  :global(:root[data-theme='light']) .t-moon {
     opacity: 1;
     transform: rotate(0);
   }
 </style>
 
 <script>
-  const btn = document.getElementById('theme-toggle');
-  const root = document.documentElement;
-  const meta = document.querySelector('meta[name="theme-color"]');
-  const COLORS: Record<string, string> = { light: '#f4f7f7', dark: '#0c1417' };
+  function initThemeToggle() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn || btn.dataset.bound === '1') return;
+    btn.dataset.bound = '1';
 
-  function current(): string {
-    return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const root = document.documentElement;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const COLORS: Record<string, string> = { light: '#eaf1f0', dark: '#07120f' };
+    const current = () => (root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+
+    btn.addEventListener('click', () => {
+      const next = current() === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+      if (meta) meta.setAttribute('content', COLORS[next]);
+    });
   }
-  btn?.addEventListener('click', () => {
-    const next = current() === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    try {
-      localStorage.setItem('theme', next);
-    } catch {}
-    if (meta) meta.setAttribute('content', COLORS[next]);
-  });
+
+  document.addEventListener('astro:page-load', initThemeToggle);
 </script>

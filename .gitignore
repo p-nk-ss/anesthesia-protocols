@@ -9,6 +9,9 @@ node_modules/
 doc/_extracted/
 doc/_ascii/
 
+# qa screenshots
+_shots/
+
 # claude / skills (dev environment, not needed for deploy)
 .claude/
 skills-lock.json

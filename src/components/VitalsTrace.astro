@@ -1,0 +1,103 @@
+---
+/**
+ * Сигнатура сайту — живий слід вітального монітора (EtCO₂).
+ * Тьмяна базова крива + яскравий «сканер»-сегмент, що біжить ліворуч→праворуч
+ * із сяйвом (як оновлення променя монітора). prefers-reduced-motion → статика.
+ */
+interface Props {
+  variant?: 'hero' | 'line';
+  class?: string;
+}
+const { variant = 'hero', class: className } = Astro.props;
+
+// Генеруємо повторювану криву EtCO₂ у viewBox 0..W × 0..100.
+const baseY = 78;
+const topY = 20;
+const cycle = 235;
+const cycles = 6;
+const W = cycle * cycles;
+let d = `M0 ${baseY}`;
+for (let i = 0; i < cycles; i++) {
+  const x = i * cycle;
+  d += ` H${x + 26}`; // базова лінія (видих майже на нулі)
+  d += ` C${x + 40} ${baseY} ${x + 44} ${topY} ${x + 58} ${topY}`; // різкий підйом (вдих CO₂)
+  d += ` L${x + 150} ${topY - 4}`; // плато з легким нахилом
+  d += ` C${x + 162} ${topY - 4} ${x + 165} ${baseY} ${x + 178} ${baseY}`; // різке падіння
+  d += ` H${x + cycle}`;
+}
+
+const uid = 'vt-' + Math.random().toString(36).slice(2, 8);
+---
+
+<div class={`vitals vitals--${variant} ${className ?? ''}`} data-vitals aria-hidden="true">
+  <svg viewBox={`0 0 ${W} 100`} preserveAspectRatio="none" fill="none">
+    <defs>
+      <linearGradient id={`${uid}-fade`} x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="var(--wave)" stop-opacity="0"></stop>
+        <stop offset="0.7" stop-color="var(--wave)" stop-opacity="0.55"></stop>
+        <stop offset="1" stop-color="var(--wave)" stop-opacity="1"></stop>
+      </linearGradient>
+    </defs>
+    <!-- Базова тьмяна крива (завжди видима, працює без анімації). -->
+    <path class="vitals__base" d={d} stroke="var(--wave)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    <!-- Яскравий «сканер»-сегмент, що біжить уздовж кривої. -->
+    <path
+      class="vitals__scan"
+      d={d}
+      stroke={`url(#${uid}-fade)`}
+      stroke-width="2.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      style={`--len:${W}`}
+    ></path>
+  </svg>
+</div>
+
+<style>
+  .vitals {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .vitals svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .vitals__base {
+    opacity: 0.18;
+  }
+  .vitals__scan {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 6px var(--glow)) drop-shadow(0 0 14px var(--glow));
+    /* Короткий яскравий сегмент + величезний розрив = «комета» на кривій. */
+    stroke-dasharray: 230 4000;
+    stroke-dashoffset: 4230;
+    animation: vitals-sweep 4.2s linear infinite;
+  }
+  @keyframes vitals-sweep {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Варіант тонкої лінії (шапка) — менше сяйва. */
+  .vitals--line .vitals__base {
+    opacity: 0.22;
+  }
+  .vitals--line .vitals__scan {
+    stroke-dasharray: 120 4000;
+    animation-duration: 5s;
+    filter: drop-shadow(0 0 4px var(--glow));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vitals__scan {
+      animation: none;
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+      opacity: 0.5;
+      filter: drop-shadow(0 0 4px var(--glow));
+    }
+  }
+</style>

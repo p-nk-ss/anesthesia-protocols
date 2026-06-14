@@ -1,12 +1,11 @@
 /* =========================================================================
-   Протоколи анестезіолога — дизайн-система
-   Тема: периопераційна медицина. Сигнатура: лінія капнографії (EtCO₂).
-   Палітра: «хірургічний» тил (колір операційної білизни) + severity-кодування.
-   Шрифти: системні стеки (миттєві, ідеальна кирилиця, нульова вага для offline)
-   + опційний self-hosted Spectral для заголовків (із serif-фолбеком).
+   Протоколи анестезіолога — дизайн-система «Витальний монітор»
+   Сигнатура: живий світний слід EtCO₂/ЕКГ. Палітра — петрол + витальні акценти.
+   Типографіка: Spectral (дисплей) + IBM Plex Mono (показання) + system sans (текст).
+   Темна тема — основна; світла («денний монітор») доступна перемикачем.
    ========================================================================= */
 
-/* Spectral підвантажується, якщо файл присутній у /fonts. Інакше — serif-фолбек. */
+/* ——— Самохостні шрифти (кириличні сабсети, потрапляють у precache) ——— */
 @font-face {
   font-family: 'Spectral';
   font-style: normal;
@@ -21,21 +20,43 @@
   font-display: swap;
   src: url('/fonts/spectral-700.woff2') format('woff2');
 }
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/plex-mono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/plex-mono-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/plex-mono-600.woff2') format('woff2');
+}
 
 :root {
   /* — Типографіка — */
   --font-display: 'Spectral', 'Georgia', 'Times New Roman', serif;
   --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', 'Roboto Mono', monospace;
+  --font-mono: 'Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', monospace;
 
-  --step--1: clamp(0.83rem, 0.8rem + 0.15vw, 0.9rem);
+  --step--1: clamp(0.8rem, 0.77rem + 0.14vw, 0.88rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.08rem);
-  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.4rem);
-  --step-2: clamp(1.45rem, 1.3rem + 0.75vw, 1.85rem);
-  --step-3: clamp(1.75rem, 1.5rem + 1.25vw, 2.5rem);
-  --step-4: clamp(2.1rem, 1.7rem + 2vw, 3.3rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.45vw, 1.42rem);
+  --step-2: clamp(1.5rem, 1.32rem + 0.85vw, 2rem);
+  --step-3: clamp(1.9rem, 1.55rem + 1.6vw, 2.9rem);
+  --step-4: clamp(2.4rem, 1.85rem + 2.6vw, 4rem);
+  --step-5: clamp(3rem, 2.1rem + 4.2vw, 5.75rem);
 
-  /* — Простір — */
+  /* — Простір / форма — */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -44,86 +65,128 @@
   --sp-6: 2rem;
   --sp-7: 3rem;
   --sp-8: 4.5rem;
+  --sp-9: 7rem;
 
-  --radius: 14px;
-  --radius-sm: 9px;
-  --maxw: 64rem;
-  --maxw-read: 44rem;
-
-  --shadow-1: 0 1px 2px rgba(8, 20, 22, 0.06), 0 2px 8px rgba(8, 20, 22, 0.05);
-  --shadow-2: 0 6px 24px rgba(8, 20, 22, 0.1), 0 2px 8px rgba(8, 20, 22, 0.06);
-  --ring: 0 0 0 3px var(--focus);
+  --radius: 16px;
+  --radius-sm: 11px;
+  --radius-lg: 24px;
+  --maxw: 70rem;
+  --maxw-read: 46rem;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ring: 0 0 0 3px var(--focus);
+
+  /* Зерно (inline SVG turbulence). */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ——— Світла тема (за замовчуванням) ——— */
+/* ——— Темна тема (основна) ——— */
 :root,
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #f4f7f7;
-  --bg-tint: #eef3f3;
-  --surface: #ffffff;
-  --surface-2: #f7fafa;
-  --border: #dde6e6;
-  --border-strong: #c6d4d4;
-
-  --ink: #0f1b1e;
-  --ink-2: #36494d;
-  --ink-3: #5f7377;
-
-  --primary: #0b7a75;
-  --primary-ink: #064f4b;
-  --primary-soft: #d8efed;
-  --on-primary: #ffffff;
-
-  --focus: rgba(11, 122, 117, 0.5);
-
-  --sev-info: #0b7a75;
-  --sev-info-soft: #d8efed;
-  --sev-success: #2e7d4f;
-  --sev-success-soft: #d9f0e2;
-  --sev-warning: #b26a00;
-  --sev-warning-soft: #fbe9cd;
-  --sev-critical: #c2362f;
-  --sev-critical-soft: #fadddb;
-
-  --wave: rgba(11, 122, 117, 0.55);
-}
-
-/* ——— Темна тема ——— */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0c1417;
-  --bg-tint: #0f1c20;
-  --surface: #121e22;
-  --surface-2: #16252a;
-  --border: #21363c;
-  --border-strong: #2c474e;
 
-  --ink: #e7eeef;
-  --ink-2: #aebcbe;
-  --ink-3: #7e9296;
+  --ink-900: #06100f;
+  --petrol: #0e2a28;
+  --bg: #07120f;
+  --bg-tint: #0a1a17;
 
-  --primary: #3fd0c9;
-  --primary-ink: #aef0ec;
-  --primary-soft: #11302f;
-  --on-primary: #042422;
+  /* Скляні поверхні. */
+  --glass: rgba(255, 255, 255, 0.045);
+  --glass-2: rgba(255, 255, 255, 0.08);
+  --surface: #0d1c1a;
+  --surface-2: #102320;
 
-  --focus: rgba(63, 208, 201, 0.55);
+  --border: rgba(214, 245, 240, 0.1);
+  --border-strong: rgba(214, 245, 240, 0.18);
 
-  --sev-info: #3fd0c9;
-  --sev-info-soft: #10302f;
-  --sev-success: #5cc98a;
-  --sev-success-soft: #11301f;
-  --sev-warning: #e3a44e;
-  --sev-warning-soft: #33260f;
-  --sev-critical: #f0726b;
-  --sev-critical-soft: #361715;
+  --ink: #dcedeb;
+  --ink-2: #9fbdb8;
+  --ink-3: #6f908b;
 
-  --wave: rgba(63, 208, 201, 0.6);
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --aqua: #4fe3d0;
+  --mint: #5ce0a8;
+  --amber: #ffb454;
+  --coral: #ff6b6b;
+
+  --primary: #4fe3d0;
+  --primary-ink: #bff6ef;
+  --primary-soft: rgba(79, 227, 208, 0.12);
+  --on-primary: #04221f;
+
+  --focus: rgba(79, 227, 208, 0.55);
+  --wave: #4fe3d0;
+  --glow: rgba(79, 227, 208, 0.32);
+
+  --sev-info: #4fe3d0;
+  --sev-info-soft: rgba(79, 227, 208, 0.14);
+  --sev-success: #5ce0a8;
+  --sev-success-soft: rgba(92, 224, 168, 0.14);
+  --sev-warning: #ffb454;
+  --sev-warning-soft: rgba(255, 180, 84, 0.14);
+  --sev-critical: #ff6b6b;
+  --sev-critical-soft: rgba(255, 107, 107, 0.15);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --glow-aqua: 0 0 0 1px rgba(79, 227, 208, 0.28), 0 14px 44px rgba(79, 227, 208, 0.2);
+
+  --grain-opacity: 0.04;
+  --scene: radial-gradient(1100px 680px at 78% -8%, rgba(79, 227, 208, 0.14), transparent 60%),
+    radial-gradient(900px 600px at 8% 0%, rgba(43, 168, 156, 0.1), transparent 55%),
+    linear-gradient(180deg, #06100f 0%, #07130f 40%, #081512 100%);
+}
+
+/* ——— Світла тема («денний монітор») ——— */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #eaf1f0;
+  --bg-tint: #e1ebe9;
+
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-2: rgba(255, 255, 255, 0.85);
+  --surface: #ffffff;
+  --surface-2: #f3f8f7;
+
+  --border: rgba(8, 42, 39, 0.1);
+  --border-strong: rgba(8, 42, 39, 0.18);
+
+  --ink: #0c1c1a;
+  --ink-2: #3c5651;
+  --ink-3: #607e79;
+
+  --aqua: #0c8f86;
+  --mint: #1f9d68;
+  --amber: #b5710a;
+  --coral: #cf3b34;
+
+  --primary: #0c8f86;
+  --primary-ink: #075952;
+  --primary-soft: rgba(12, 143, 134, 0.12);
+  --on-primary: #ffffff;
+
+  --focus: rgba(12, 143, 134, 0.5);
+  --wave: #0c8f86;
+  --glow: rgba(12, 143, 134, 0.22);
+
+  --sev-info: #0c8f86;
+  --sev-info-soft: rgba(12, 143, 134, 0.12);
+  --sev-success: #1f9d68;
+  --sev-success-soft: rgba(31, 157, 104, 0.13);
+  --sev-warning: #b5710a;
+  --sev-warning-soft: rgba(181, 113, 10, 0.14);
+  --sev-critical: #cf3b34;
+  --sev-critical-soft: rgba(207, 59, 52, 0.12);
+
+  --shadow-1: 0 1px 2px rgba(8, 30, 28, 0.06), 0 8px 24px rgba(8, 30, 28, 0.07);
+  --shadow-2: 0 24px 50px rgba(8, 30, 28, 0.14);
+  --glow-aqua: 0 0 0 1px rgba(12, 143, 134, 0.2), 0 14px 40px rgba(12, 143, 134, 0.14);
+
+  --grain-opacity: 0.03;
+  --scene: radial-gradient(1100px 680px at 80% -10%, rgba(12, 143, 134, 0.12), transparent 60%),
+    radial-gradient(820px 560px at 6% 0%, rgba(12, 143, 134, 0.07), transparent 55%),
+    linear-gradient(180deg, #eef3f2 0%, #e9f1ef 100%);
 }
 
 *,
@@ -138,15 +201,36 @@ html {
 
 body {
   margin: 0;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: var(--step-0);
-  line-height: 1.6;
+  line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  min-height: 100dvh;
   overflow-wrap: break-word;
+}
+
+/* Сцена-фон (градієнт + сяйво) фіксована за вмістом. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: var(--scene);
+}
+/* Плівка зерна поверх сцени. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--grain);
+  background-size: 160px 160px;
+  opacity: var(--grain-opacity);
+  pointer-events: none;
+  mix-blend-mode: overlay;
 }
 
 h1,
@@ -155,13 +239,12 @@ h3,
 h4 {
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
   color: var(--ink);
   margin: 0 0 var(--sp-4);
   text-wrap: balance;
 }
-
 h1 {
   font-size: var(--step-4);
 }
@@ -171,7 +254,6 @@ h2 {
 h3 {
   font-size: var(--step-1);
 }
-
 p {
   margin: 0 0 var(--sp-4);
 }
@@ -185,7 +267,7 @@ a {
 :where(a, button, input, [tabindex]):focus-visible {
   outline: none;
   box-shadow: var(--ring);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 img {
@@ -203,10 +285,11 @@ img {
 
 .eyebrow {
   font-family: var(--font-mono);
+  font-weight: 500;
   font-size: var(--step--1);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--ink-3);
+  color: var(--primary);
   margin: 0;
 }
 
@@ -237,25 +320,41 @@ img {
   border: 0;
 }
 
-/* — Бейджі типу/категорії — */
+/* — Бейджі (mono «табло») — */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
   font-family: var(--font-mono);
+  font-weight: 500;
   font-size: var(--step--1);
-  letter-spacing: 0.04em;
-  padding: 0.18em 0.6em;
-  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.22em 0.6em;
+  border-radius: 7px;
   border: 1px solid var(--border-strong);
   color: var(--ink-2);
-  background: var(--surface-2);
+  background: var(--glass);
   white-space: nowrap;
 }
 .badge[data-type='algorithm'] {
   color: var(--primary-ink);
   background: var(--primary-soft);
-  border-color: transparent;
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* — Глобальна поява [data-reveal] (стаггер через --reveal-i) — */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+    transition-delay: calc(var(--reveal-i, 0) * 70ms);
+  }
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

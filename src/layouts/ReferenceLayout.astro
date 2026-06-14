@@ -24,14 +24,25 @@ const { title, description, category, updated, source } = Astro.props;
       updated={updated}
       source={source}
     />
-    <div class="prose">
-      <slot />
+    <div class="reading" data-reveal>
+      <div class="prose">
+        <slot />
+      </div>
     </div>
   </article>
 
   <style>
     .ref {
       max-width: var(--maxw-read);
+    }
+    .reading {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: clamp(var(--sp-4), 4vw, var(--sp-7));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-1);
     }
   </style>
 </BaseLayout>

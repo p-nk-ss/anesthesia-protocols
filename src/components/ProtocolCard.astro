@@ -17,6 +17,7 @@ const { href, title, description, type, category, sourceName } = Astro.props;
   class="card"
   href={href}
   data-card
+  data-reveal
   data-title={title.toLowerCase()}
   data-desc={description.toLowerCase()}
   data-category={category}
@@ -25,12 +26,20 @@ const { href, title, description, type, category, sourceName } = Astro.props;
     <span class="badge" data-type={type}>{TYPE_LABEL[type]}</span>
     {sourceName && <span class="card__source">{sourceName}</span>}
   </div>
+
   <h3 class="card__title">{title}</h3>
   <p class="card__desc">{description}</p>
-  <span class="card__cta" aria-hidden="true">
-    Відкрити
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
-  </span>
+
+  <div class="card__foot">
+    <span class="card__cta">
+      Відкрити
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </span>
+    <svg class="card__pulse" viewBox="0 0 120 24" fill="none" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M2 13 H40 C44 13 45 5 49 5 C53 5 54 19 58 19 C62 19 63 13 67 13 H118"
+        stroke="var(--wave)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </div>
 </a>
 
 <style>
@@ -40,33 +49,45 @@ const { href, title, description, type, category, sourceName } = Astro.props;
     flex-direction: column;
     gap: var(--sp-2);
     padding: var(--sp-5);
-    background: var(--surface);
+    background: var(--glass);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     text-decoration: none;
     color: inherit;
     box-shadow: var(--shadow-1);
-    transition: transform 0.22s var(--ease), box-shadow 0.22s var(--ease), border-color 0.22s var(--ease);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     overflow: hidden;
+    transition: transform 0.3s var(--spring), box-shadow 0.3s var(--ease),
+      border-color 0.3s var(--ease), background 0.3s var(--ease);
   }
-  /* Тонка ліва межа кольору первинної палітри як акцент. */
+  /* Світний кант зверху при наведенні. */
   .card::before {
     content: '';
     position: absolute;
-    inset: 0 auto 0 0;
-    width: 3px;
-    background: var(--primary);
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg, transparent 30%, var(--primary), transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.22s var(--ease);
+    transition: opacity 0.3s var(--ease);
+    pointer-events: none;
   }
-  .card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-2);
-    border-color: var(--border-strong);
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-4px);
+    background: var(--glass-2);
+    border-color: transparent;
+    box-shadow: var(--shadow-2), var(--glow-aqua);
   }
-  .card:hover::before {
+  .card:hover::before,
+  .card:focus-visible::before {
     opacity: 1;
   }
+
   .card__top {
     display: flex;
     align-items: center;
@@ -78,31 +99,72 @@ const { href, title, description, type, category, sourceName } = Astro.props;
     font-family: var(--font-mono);
     font-size: var(--step--1);
     color: var(--ink-3);
+    letter-spacing: 0.02em;
   }
   .card__title {
     font-size: var(--step-1);
     margin: 0;
+    transition: color 0.25s var(--ease);
+  }
+  .card:hover .card__title {
+    color: var(--primary-ink);
   }
   .card__desc {
     margin: 0;
     color: var(--ink-2);
     font-size: var(--step-0);
   }
-  .card__cta {
+
+  .card__foot {
     margin-top: auto;
-    padding-top: var(--sp-3);
+    padding-top: var(--sp-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .card__cta {
     display: inline-flex;
     align-items: center;
     gap: var(--sp-1);
     font-family: var(--font-mono);
     font-size: var(--step--1);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--primary);
+    white-space: nowrap;
   }
   .card__cta svg {
-    transition: transform 0.22s var(--ease);
+    transition: transform 0.25s var(--spring);
   }
   .card:hover .card__cta svg {
-    transform: translateX(3px);
+    transform: translateX(4px);
+  }
+
+  /* Міні-пульс: тьмяний, «оживає» при наведенні. */
+  .card__pulse {
+    width: 96px;
+    height: 20px;
+    flex: none;
+    opacity: 0.25;
+    transition: opacity 0.3s var(--ease);
+  }
+  .card:hover .card__pulse {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 5px var(--glow));
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .card__pulse path {
+      stroke-dasharray: 60 320;
+      stroke-dashoffset: 380;
+    }
+    .card:hover .card__pulse path {
+      animation: card-sweep 1.6s linear infinite;
+    }
+  }
+  @keyframes card-sweep {
+    to {
+      stroke-dashoffset: 0;
+    }
   }
 </style>
