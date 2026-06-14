@@ -69,9 +69,10 @@ const channels =
   variant === 'line'
     ? [{ key: 'ecg', d: ecgPath(9), color: 'var(--wave)' }]
     : [
-        { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(10), color: 'var(--aqua)' },
-        { key: 'spo2', label: 'SpO₂ · pleth', value: '98', unit: '%', d: plethPath(10), color: 'var(--spo2)' },
-        { key: 'co2', label: 'EtCO₂', value: '37', unit: 'mmHg', d: capnoPath(2), color: 'var(--amber)' },
+        { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(10), color: 'var(--aqua)', sweep: '4.6s' },
+        { key: 'spo2', label: 'SpO₂ · pleth', value: '98', unit: '%', d: plethPath(10), color: 'var(--spo2)', sweep: '4.6s' },
+        // Капнографія тече з частотою дихання — розгортка вп'ятеро повільніша.
+        { key: 'co2', label: 'EtCO₂', value: '37', unit: 'mmHg', d: capnoPath(6), color: 'var(--amber)', sweep: '23s' },
       ];
 ---
 
@@ -90,7 +91,7 @@ const channels =
       <div class="monitor__flicker" aria-hidden="true" />
       <div class="monitor__channels">
         {channels.map((ch) => (
-          <div class="ch" style={`--ch:${ch.color}`}>
+          <div class="ch" style={`--ch:${ch.color};--sweep:${ch.sweep}`}>
             <div class="ch__meta">
               <span class="ch__label">{ch.label}</span>
               <span class="ch__value">
@@ -230,7 +231,7 @@ const channels =
     filter: drop-shadow(0 0 5px var(--ch)) drop-shadow(0 0 12px color-mix(in srgb, var(--ch) 45%, transparent));
     stroke-dasharray: 220 4000;
     stroke-dashoffset: 4220;
-    animation: vt-sweep 4.6s linear infinite;
+    animation: vt-sweep var(--sweep, 4.6s) linear infinite;
   }
 
   @keyframes vt-sweep {
