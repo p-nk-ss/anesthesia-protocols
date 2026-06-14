@@ -15,7 +15,7 @@ const { title, description, category, updated, source } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class="container ref">
+  <article class={`container ref ${category === 'tools' ? 'ref--wide' : ''}`}>
     <ProtocolHero
       title={title}
       description={description}
@@ -34,6 +34,10 @@ const { title, description, category, updated, source } = Astro.props;
   <style>
     .ref {
       max-width: var(--maxw-read);
+    }
+    /* Сторінки-інструменти (калькулятори) ширші — таблиці вміщаються без скролу. */
+    .ref--wide {
+      max-width: 64rem;
     }
     .reading {
       background: var(--glass);

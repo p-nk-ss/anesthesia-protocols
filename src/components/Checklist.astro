@@ -1,0 +1,284 @@
+---
+/**
+ * Інтерактивний чек-лист безпеки: фази з пунктами для відмітки.
+ * Серверний рендер нативних чекбоксів (працюють без JS); checklist.ts додає
+ * лічильник прогресу та кнопку «Скинути». Дані — src/lib/checklists.ts.
+ */
+import type { SafetyChecklist } from '../lib/checklists';
+
+interface Props {
+  checklist: SafetyChecklist;
+}
+const { checklist } = Astro.props;
+const total = checklist.phases.reduce((n, p) => n + p.items.length, 0);
+---
+
+<div class="ckl" data-checklist style="--ckl-progress: 0">
+  <div class="ckl__bar" data-ckl-bar hidden>
+    <div class="ckl__barhead">
+      <span class="ckl__barlabel">Прогрес</span>
+      <strong class="ckl__count" data-ckl-total>0/{total}</strong>
+      <button class="ckl__reset" type="button" data-ckl-reset>Скинути</button>
+    </div>
+    <div class="ckl__track" aria-hidden="true"><span class="ckl__fill"></span></div>
+  </div>
+
+  {
+    checklist.phases.map((phase, pi) => (
+      <section class="ckl__phase" data-phase data-sev={phase.severity}>
+        <header class="ckl__phead">
+          <span class="ckl__pnum">{pi + 1}</span>
+          <div class="ckl__pmeta">
+            <h3 class="ckl__ptitle">{phase.title}</h3>
+            <p class="ckl__pwhen">
+              {phase.when} · {phase.team}
+            </p>
+          </div>
+          <span class="ckl__pcount" data-phase-count hidden />
+        </header>
+        <ul class="ckl__list">
+          {phase.items.map((item, ii) => (
+            <li>
+              <label class="ckl__item">
+                <input class="ckl__cb" type="checkbox" data-check name={`${phase.id}-${ii}`} />
+                <span class="ckl__text">
+                  {item.text}
+                  {item.note && <span class="ckl__note">{item.note}</span>}
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>
+
+<script>
+  import { initChecklists } from './checklist';
+  document.addEventListener('astro:page-load', initChecklists);
+</script>
+
+<style>
+  .ckl {
+    display: grid;
+    gap: var(--sp-5);
+  }
+
+  /* —— Прогрес-панель (з'являється з JS) —— */
+  .ckl__bar {
+    position: sticky;
+    top: 8px;
+    z-index: 2;
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .ckl__barhead {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .ckl__barlabel {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .ckl__count {
+    font-family: var(--font-mono);
+    font-size: var(--step-1);
+    font-variant-numeric: tabular-nums;
+    color: var(--primary);
+    text-shadow: 0 0 18px var(--glow);
+  }
+  .is-complete .ckl__count {
+    color: var(--mint);
+  }
+  .ckl__reset {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: 0.4em 0.9em;
+    min-height: 36px;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .ckl__reset:hover,
+  .ckl__reset:focus-visible {
+    color: var(--primary);
+    border-color: var(--primary);
+    outline: none;
+  }
+  .ckl__track {
+    margin-top: var(--sp-3);
+    height: 4px;
+    border-radius: 4px;
+    background: var(--border-strong);
+    overflow: hidden;
+  }
+  .ckl__fill {
+    display: block;
+    height: 100%;
+    width: calc(var(--ckl-progress, 0) * 100%);
+    background: linear-gradient(90deg, var(--aqua), var(--mint));
+    box-shadow: 0 0 10px var(--glow);
+    transition: width 0.35s var(--ease);
+  }
+
+  /* —— Фаза —— */
+  .ckl__phase {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--sev);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .ckl__phase[data-sev='info'] {
+    --sev: var(--sev-info);
+    --sev-soft: var(--sev-info-soft);
+  }
+  .ckl__phase[data-sev='warning'] {
+    --sev: var(--sev-warning);
+    --sev-soft: var(--sev-warning-soft);
+  }
+  .ckl__phase[data-sev='success'] {
+    --sev: var(--sev-success);
+    --sev-soft: var(--sev-success-soft);
+  }
+
+  .ckl__phead {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: var(--sev-soft);
+    border-bottom: 1px solid var(--border);
+  }
+  .ckl__pnum {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--sev);
+    color: var(--sev);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .ckl__pmeta {
+    min-width: 0;
+  }
+  .ckl__ptitle {
+    margin: 0;
+    font-size: var(--step-0);
+    color: var(--ink);
+  }
+  .ckl__pwhen {
+    margin: 2px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-3);
+  }
+  .ckl__pcount {
+    margin-left: auto;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    color: var(--sev);
+  }
+  .ckl__phase.is-done .ckl__pnum {
+    background: var(--sev);
+    color: var(--on-primary);
+  }
+
+  /* —— Пункти —— */
+  .ckl__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ckl__list li + li {
+    border-top: 1px solid var(--border);
+  }
+  .ckl__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    min-height: 44px;
+    cursor: pointer;
+  }
+  .ckl__item:hover {
+    background: var(--glass);
+  }
+  .ckl__cb {
+    flex: none;
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 1px 0 0;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .ckl__cb:focus-visible {
+    outline: none;
+    border-color: var(--sev);
+    box-shadow: 0 0 0 3px var(--sev-soft);
+  }
+  .ckl__cb:checked {
+    border-color: var(--sev);
+    background-color: var(--sev);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5 6.5 12 13 4.5' fill='none' stroke='%2304221f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 15px;
+  }
+  .ckl__text {
+    color: var(--ink);
+    line-height: 1.45;
+    transition: color 0.2s var(--ease);
+  }
+  .ckl__cb:checked + .ckl__text {
+    color: var(--ink-3);
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-3);
+  }
+  .ckl__note {
+    display: block;
+    margin-top: 3px;
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    line-height: 1.4;
+    text-decoration: none;
+  }
+  .ckl__cb:checked + .ckl__text .ckl__note {
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ckl__fill,
+    .ckl__cb,
+    .ckl__text,
+    .ckl__reset {
+      transition: none;
+    }
+  }
+</style>

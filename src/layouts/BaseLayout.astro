@@ -43,24 +43,13 @@ const year = new Date().getFullYear();
     <header class="site-header" transition:persist="site-header">
       <div class="container site-header__inner">
         <a class="brand" href="/" aria-label={`${siteName} — на головну`}>
-          <span class="brand__mark" aria-hidden="true">
-            <svg viewBox="0 0 40 24" fill="none" preserveAspectRatio="none">
-              <path
-                d="M2 15 H11 C13 15 13.5 5 16 5 H18 C20.5 5 21 15 23 15 H38"
-                stroke="var(--wave)"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </svg>
-          </span>
+          <span class="brand__ecg" aria-hidden="true"><VitalsTrace variant="line" /></span>
           <span class="brand__text">
             <span class="brand__name">Протоколи</span>
             <span class="brand__sub">анестезіолога</span>
           </span>
         </a>
       </div>
-      <div class="site-header__pulse"><VitalsTrace variant="line" /></div>
     </header>
 
     <main id="main" transition:animate="fade">
@@ -109,23 +98,30 @@ const year = new Date().getFullYear();
         padding-block: var(--sp-3);
       }
       .brand {
+        position: relative;
         display: inline-flex;
         align-items: center;
-        gap: var(--sp-3);
         text-decoration: none;
         color: var(--ink);
+        padding: 4px 2px;
       }
-      .brand__mark {
-        width: 44px;
-        height: 26px;
-        flex: none;
-        filter: drop-shadow(0 0 6px var(--glow));
-      }
-      .brand__mark svg {
-        width: 100%;
-        height: 100%;
+      /* Хвиля ЕКГ позаду назви — сигнатура монітора замість окремого лого. */
+      .brand__ecg {
+        position: absolute;
+        left: -12px;
+        right: -12px;
+        top: 50%;
+        height: 58px;
+        transform: translateY(-50%);
+        z-index: 0;
+        opacity: 0.7;
+        pointer-events: none;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
       }
       .brand__text {
+        position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
         line-height: 1;
@@ -133,23 +129,18 @@ const year = new Date().getFullYear();
       .brand__name {
         font-family: var(--font-display);
         font-weight: 700;
-        font-size: 1.22rem;
+        font-size: 1.6rem;
         letter-spacing: -0.01em;
       }
       .brand__sub {
         font-family: var(--font-mono);
-        font-size: 0.6rem;
+        font-size: 0.68rem;
         font-weight: 500;
-        letter-spacing: 0.26em;
+        letter-spacing: 0.24em;
         text-transform: uppercase;
         color: var(--ink-3);
-        margin-top: 4px;
+        margin-top: 5px;
       }
-      .site-header__pulse {
-        height: 14px;
-        opacity: 0.8;
-      }
-
       .site-footer {
         margin-top: var(--sp-9);
         border-top: 1px solid var(--border);

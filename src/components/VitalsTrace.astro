@@ -68,7 +68,7 @@ function capnoPath(breaths: number): string {
 
 const channels =
   variant === 'line'
-    ? [{ key: 'ecg', d: ecgPath(9), color: 'var(--wave)' }]
+    ? [{ key: 'ecg', d: ecgPath(6), color: 'var(--wave)' }]
     : [
         // Пульсові канали: швидка розгортка, великий розрив пунктиру.
         { key: 'ecg', label: 'ЕКГ · II', value: '72', unit: 'уд/хв', d: ecgPath(10), color: 'var(--aqua)', sweep: '4.6s', gap: 4000, off: 4220 },

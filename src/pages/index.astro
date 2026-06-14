@@ -28,7 +28,7 @@ const totalWord = plural(total, 'протокол', 'протоколи', 'пр�
       </p>
 
       <h1 class="hero__title">
-        Протоколи та алгоритми<br /><em>під рукою</em>
+        Протоколи та алгоритми<em>під рукою</em>
       </h1>
 
       <p class="hero__lead">
@@ -125,11 +125,16 @@ const totalWord = plural(total, 'протокол', 'протоколи', 'пр�
       margin: var(--sp-4) 0 var(--sp-5);
       letter-spacing: -0.03em;
     }
+    /* «під рукою» — допоміжна фраза: менша, серифний курсив (Spectral). */
     .hero__title em {
+      display: block;
+      margin-top: var(--sp-2);
+      font-family: var(--font-display);
       font-style: italic;
       font-weight: 600;
+      font-size: calc(var(--step-2) * 1.2);
       color: var(--primary);
-      text-shadow: 0 0 30px var(--glow);
+      text-shadow: 0 0 22px var(--glow);
     }
     .hero__lead {
       max-width: 40rem;
